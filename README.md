@@ -1,4 +1,4 @@
-# Beesness: Automated Bee Breeding System
+# HiveMind: Automated Bee Breeding System
 
 An OpenComputers program for automating bee breeding using Forestry, Gendustry, and related mods. The system calculates optimal breeding paths and executes them automatically using Advanced Mutatron and Industrial Apiary setups.
 
