@@ -27,6 +27,8 @@ An OpenComputers program for automating bee breeding using Forestry, Gendustry, 
 - OpenComputers Adapter blocks (for Gendustry API access)
 - Additional storage chests
 - Power supply for machines
+- Colored Lamp (OpenLights mod recommended, or similar programmable lighting)
+- Chat Box from Random Things (for chat notifications)
 
 ## Physical Setup
 
@@ -105,6 +107,47 @@ The program uses a three-phase approach:
 1. Breed required drone species first
 2. Run accumulation cycles to build drone reserves
 3. Execute golden path using accumulated resources
+
+### Status Indicators
+
+#### Colored Lamp Status
+When a programmable colored lamp is connected, it displays the current system status:
+
+**Compatible Mods:**
+- OpenLights (recommended - has `coloredlamp` component)
+- RFTools screens/displays  
+- Actually Additions lamps
+- Any mod with `setLampColor()` or similar API
+
+**Status Colors:**
+- **White** - Idle/Ready for commands
+- **Green** - Working normally (breeding, processing)
+- **Yellow** - Waiting for resources (beebee gun, materials)
+- **Red** - Error state (requires user intervention)
+- **Orange** - Manually paused
+- **Blue** - Task completed successfully
+- **Purple** - Operation aborted by user
+
+#### Chat Notifications
+When a Chat Box is connected, the system sends important status updates:
+- System startup and breeding sequence start
+- Error messages with details
+- Major completion notifications
+- User action confirmations (resume, abort)
+
+Configure in main.lua:
+```lua
+config.use_status_lamp = true           -- Enable colored lamp
+config.use_chat_notifications = true    -- Enable chat messages
+config.chat_player_name = nil           -- Broadcast to all (or set specific player)
+```
+
+**Example Chat Messages:**
+- `[HiveMind] System started - Ready for commands`
+- `[HiveMind] Starting breeding sequence (Imperial)`
+- `[HiveMind] ERROR: Beebee gun not found in Mechanical User slot 1`
+- `[HiveMind] Resumed: Issue fixed (Imperial)`
+- `[HiveMind] All breeding completed successfully! (Imperial)`
 
 ## Supported Mods
 
