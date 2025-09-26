@@ -178,7 +178,7 @@ local function loadBeeDatabase()
     mutations["Decomposing"] = {parents = {"Marshy", "Barren"}, mod = "ExtraBees"}
     mutations["Gnawing"] = {parents = {"Forest", "Barren"}, mod = "ExtraBees"}
     mutations["Rotten"] = {parents = {"Meadows", "Desolate"}, mod = "ExtraBees"}
-    mutations["Bone"] = {parents = {"Forest", "Desolate"}, mod = "ExtraBees"}
+    mutations["Skeletal"] = {parents = {"Forest", "Desolate"}, mod = "ExtraBees"}
     mutations["Creeper"] = {parents = {"Modest", "Desolate"}, mod = "ExtraBees"}
     mutations["Rock"] = {parents = {"Forest", "Common"}, mod = "ExtraBees"}
     mutations["Stone"] = {parents = {"Diligent", "Rock"}, mod = "ExtraBees"}
@@ -264,7 +264,7 @@ local function loadBeeDatabase()
     mutations["Freezing"] = {parents = {"Ocean", "Artic"}, mod = "ExtraBees"}
     mutations["Shadow"] = {parents = {"Sinister", "Rock"}, mod = "ExtraBees"}
     mutations["Darkened"] = {parents = {"Shadow", "Rock"}, mod = "ExtraBees"}
-    mutations["Abyss"] = {parents = {"Shadow", "Darkened"}, mod = "ExtraBees"}
+    mutations["Abyssal"] = {parents = {"Shadow", "Darkened"}, mod = "ExtraBees"}
     mutations["Red"] = {parents = {"Forest", "Valiant"}, mod = "ExtraBees"}
     mutations["Yellow"] = {parents = {"Meadows", "Valiant"}, mod = "ExtraBees"}
     mutations["Blue"] = {parents = {"Valiant", "Water"}, mod = "ExtraBees"}
@@ -303,26 +303,26 @@ local function loadBeeDatabase()
     mutations["QuantumStrange"] = {parents = {"MadScientist", "Phantasmal"}, mod = "Career Bees"}
     mutations["Temporal"] = {parents = {"QuantumCharm", "QuantumStrange"}, mod = "Career Bees"}
     mutations["Rainbow"] = {parents = {"Student", "Cultivated"}, mod = "Career Bees"}
-    mutations["Acceleration"] = {parents = {"Engineer", "Temporal"}, mod = "Career Bees"}
+    mutations["Temporal"] = {parents = {"Engineer", "Temporal"}, mod = "Career Bees"}
     mutations["TaxCollector"] = {parents = {"Thief", "Imperial"}, mod = "Career Bees"}
-    mutations["PhD"] = {parents = {"MadScientist", "Scholarly"}, mod = "Career Bees"}
-    mutations["Robot"] = {parents = {"Engineer", "PhD"}, mod = "Career Bees"}
+    mutations["PHD"] = {parents = {"MadScientist", "Scholarly"}, mod = "Career Bees"}
+    mutations["Robot"] = {parents = {"Engineer", "PHD"}, mod = "Career Bees"}
     mutations["Devil"] = {parents = {"Thief", "Demonic"}, mod = "Career Bees"}
     
     -- MeatballCraft Custom Bees (https://github.com/sainagh/meatballcraft/blob/main/config/gendustry/meatball_bees.cfg)
     mutations["Meatball"] = {parents = {"Industrious", "Diligent"}, mod = "MeatballCraft"}
-    mutations["Balanced"] = {parents = {"Acceleration", "Forlorn"}, mod = "MeatballCraft"}
+    mutations["Balanced"] = {parents = {"Temporal", "Forlorn"}, mod = "MeatballCraft"}
     mutations["Formic"] = {parents = {"Acidic", "Meadows"}, mod = "MeatballCraft"}
     mutations["Oxygen"] = {parents = {"Student", "Imperial"}, mod = "MeatballCraft"}
-    mutations["Alchemical"] = {parents = {"Ethereal", "Arcane"}, mod = "MeatballCraft"}
+    mutations["EMBee"] = {parents = {"Ethereal", "Arcane"}, mod = "MeatballCraft"}
     mutations["Fiotic"] = {parents = {"LightBlue", "Classical"}, mod = "MeatballCraft"}
     mutations["Feesh"] = {parents = {"Water", "Prehistoric"}, mod = "MeatballCraft"}
-    mutations["Luctor"] = {parents = {"Rainbow", "Abyss"}, mod = "MeatballCraft"}
-    mutations["Necronomibee"] = {parents = {"Savant", "Abyss"}, mod = "MeatballCraft"}
+    mutations["Luctor"] = {parents = {"Rainbow", "Abyssal"}, mod = "MeatballCraft"}
+    mutations["Necronomibee"] = {parents = {"Savant", "Abyssal"}, mod = "MeatballCraft"}
     mutations["Herblore"] = {parents = {"Esoteric", "Quantum"}, mod = "MeatballCraft"}
     mutations["Experienced"] = {parents = {"Radiant", "Armored"}, mod = "MeatballCraft"}
     mutations["Uselessforce"] = {parents = {"Red", "Fiendish"}, mod = "MeatballCraft"}
-    mutations["Restlessclam"] = {parents = {"White", "Shocking"}, mod = "MeatballCraft"}
+    mutations["RestlessClam"] = {parents = {"White", "Shocking"}, mod = "MeatballCraft"}
     mutations["Sandman"] = {parents = {"Black", "Firey"}, mod = "MeatballCraft"}
     mutations["Shadow"] = {parents = {"Alcohol", "Transmuting"}, mod = "MeatballCraft"}
     mutations["Baguette"] = {parents = {"Thief", "Pupil"}, mod = "MeatballCraft"}
@@ -331,24 +331,24 @@ local function loadBeeDatabase()
     mutations["Pyromaniacal"] = {parents = {"Devil", "Rainbow"}, mod = "MeatballCraft"}
     mutations["NerdySpider"] = {parents = {"Phantasmal", "Emerald"}, mod = "MeatballCraft"}
     mutations["Isekai"] = {parents = {"Crepuscular", "Deeplearner"}, mod = "MeatballCraft"}
-    mutations["Pyramid"] = {parents = {"Lordly", "Acceleration"}, mod = "MeatballCraft"}
+    mutations["Pyramid"] = {parents = {"Lordly", "Temporal"}, mod = "MeatballCraft"}
     mutations["Buried"] = {parents = {"AESkystone", "Platinum"}, mod = "MeatballCraft"}
     mutations["Stargazer"] = {parents = {"Quantum", "Classical"}, mod = "MeatballCraft"}
     mutations["Chevron"] = {parents = {"Robot", "LightBlue"}, mod = "MeatballCraft"}
     mutations["Ringbearer"] = {parents = {"Gold", "Endearing"}, mod = "MeatballCraft"}
     mutations["Controller"] = {parents = {"Ringbearer", "Chevron"}, mod = "MeatballCraft"}
-    mutations["Tinkerest"] = {parents = {"Blutonium", "PhD"}, mod = "MeatballCraft"}
+    mutations["Tinkerest"] = {parents = {"Blutonium", "PHD"}, mod = "MeatballCraft"}
     mutations["Serenading"] = {parents = {"Radiant", "Arcane"}, mod = "MeatballCraft"}
-    mutations["Nucleartechnician"] = {parents = {"Bomber", "PhD"}, mod = "MeatballCraft"}
-    mutations["Thermallyexpanded"] = {parents = {"TEPyro", "PhD"}, mod = "MeatballCraft"}
+    mutations["Nuclear Technician"] = {parents = {"Bomber", "PHD"}, mod = "MeatballCraft"}
+    mutations["Thermally Expanded"] = {parents = {"Pyro", "PHD"}, mod = "MeatballCraft"}
     mutations["Helium"] = {parents = {"Oxygen", "Deeplearner"}, mod = "MeatballCraft"}
     mutations["Fluorine"] = {parents = {"Oxygen", "Helium"}, mod = "MeatballCraft"}
     mutations["Connor"] = {parents = {"Radioactive", "Draconic"}, mod = "MeatballCraft"}
-    mutations["Freeky"] = {parents = {"Alchemical", "Sweet"}, mod = "MeatballCraft"}
-    mutations["Kurrycat"] = {parents = {"Scholarly", "PhD"}, mod = "MeatballCraft"}
+    mutations["Freeky"] = {parents = {"EMBee", "Sweet"}, mod = "MeatballCraft"}
+    mutations["Kurrycat"] = {parents = {"Scholarly", "PHD"}, mod = "MeatballCraft"}
     mutations["SpoonyPanda"] = {parents = {"Supernatural", "Mineral"}, mod = "MeatballCraft"}
-    mutations["LordRaine"] = {parents = {"Sorcerous", "Acceleration"}, mod = "MeatballCraft"}
-    mutations["Aedial"] = {parents = {"Bone", "Scholarly"}, mod = "MeatballCraft"}
+    mutations["LordRaine"] = {parents = {"Sorcerous", "Temporal"}, mod = "MeatballCraft"}
+    mutations["Aedial"] = {parents = {"Skeletal", "Scholarly"}, mod = "MeatballCraft"}
     mutations["Mathias"] = {parents = {"Ringbearer", "Granite"}, mod = "MeatballCraft"}
     mutations["ChaosStrikez"] = {parents = {"Energetic", "Savant"}, mod = "MeatballCraft"}
     
@@ -588,42 +588,107 @@ function calculateBreedingPath(target)
     -- Clean the tree (remove duplicate drone requirements)
     cleanBreedingTree(tree)
     
-    -- Extract starting princesses and drone requirements
-    local starting_princesses = findStartingPrincesses(tree)
+    -- Extract drone requirements and calculate steps
     local drone_requirements = calculateDroneRequirements(tree)
     local total_steps = countTreeSteps(tree)
+    
+    -- Calculate base species requirements (this gives us the actual starting princesses needed)
+    local missing_princesses, missing_drones = calculateMissingBaseSpecies(tree, drone_requirements)
+    
+    -- The starting princesses are just the base species that we need as princesses
+    local starting_princesses = {}
+    local base_princesses_needed = {}
+    local base_drones_needed = {}
+    
+    findBaseSpeciesNeeded(tree, base_princesses_needed, base_drones_needed)
+    
+    for species, count in pairs(base_princesses_needed) do
+        table.insert(starting_princesses, species)
+    end
+    
+    -- Check if plan can be executed (no missing base species)
+    local can_execute = true
+    for _, _ in pairs(missing_princesses) do
+        can_execute = false
+        break
+    end
+    if can_execute then
+        for _, _ in pairs(missing_drones) do
+            can_execute = false
+            break
+        end
+    end
+    
+    -- Perform sanity checks on the optimized tree
+    local sanity_results = performTreeSanityChecks(tree, target)
+    
+    -- Handle critical errors (plan is invalid)
+    if sanity_results.has_errors then
+        print("❌ CRITICAL ERRORS detected in breeding plan:")
+        for _, error in ipairs(sanity_results.errors) do
+            print("  " .. error.message)
+            if error.path then
+                print("    Location: " .. error.path)
+            end
+        end
+        -- Return error details for debugging instead of nil
+        return {
+            tree = tree,
+            starting_princesses = starting_princesses,
+            drone_requirements = drone_requirements,
+            total_steps = total_steps,
+            target = target,
+            missing_princesses = missing_princesses,
+            missing_drones = missing_drones,
+            can_execute = false,
+            critical_errors = sanity_results.errors,
+            plan_failed = true,
+            sanity_issues = sanity_results.warnings
+        }
+    end
+    
+    -- Handle warnings (plan is valid but suboptimal)
+    if sanity_results.has_warnings then
+        print("⚠️  Optimization warnings:")
+        for _, warning in ipairs(sanity_results.warnings) do
+            print("  " .. warning.message)
+            if warning.type == "missed_reuse" then
+                for species, details in pairs(warning.details) do
+                    if details.potential_additional_reuse then
+                        print("    " .. species .. ": " .. details.occurrences .. " occurrences, " .. details.reused .. " reused, could reuse " .. details.potential_additional_reuse .. " more")
+                    else
+                        print("    " .. species .. ": " .. details.occurrences .. " occurrences, no reuse")
+                    end
+                end
+            end
+        end
+    end
     
     return {
         tree = tree,
         starting_princesses = starting_princesses,
         drone_requirements = drone_requirements,
         total_steps = total_steps,
-        target = target
+        target = target,
+        missing_princesses = missing_princesses,
+        missing_drones = missing_drones,
+        can_execute = can_execute,
+        sanity_issues = sanity_results.warnings -- Only pass warnings to artifacts (errors already failed the plan)
     }
 end
 
 -- Build breeding tree with left (princess) and right (drone) branches
 function buildBreedingTree(species)
-    -- Base case: if we already have both princess and drone, no need to breed
-    if hasSpeciesPrincess(species) and hasSpeciesDrone(species) then
-        return nil
-    end
-    
     -- Base case: if no mutation exists, this is a base species
     if not mutations[species] then
-        -- Check if we have it available
-        if hasSpeciesPrincess(species) or hasSpeciesDrone(species) then
-            return {
-                species = species,
-                left_parent = nil,
-                right_parent = nil,
-                need_princess = not hasSpeciesPrincess(species),
-                need_drone = not hasSpeciesDrone(species),
-                drone_count = 0 -- Will be calculated later
-            }
-        else
-            return nil -- Cannot breed and don't have it
-        end
+        return {
+            species = species,
+            left_parent = nil,
+            right_parent = nil,
+            need_princess = not hasSpeciesPrincess(species),
+            need_drone = not hasSpeciesDrone(species),
+            drone_count = 0
+        }
     end
     
     local parents = mutations[species].parents
@@ -639,29 +704,32 @@ function buildBreedingTree(species)
         drone_count = 0
     }
     
-    -- Build left branch (princess lineage) if we don't have the princess
-    if not hasSpeciesPrincess(left_parent) then
-        tree.left_parent = buildBreedingTree(left_parent)
-    end
-    
-    -- Build right branch (drone lineage) if we don't have the drone
-    if not hasSpeciesDrone(right_parent) then
-        tree.right_parent = buildBreedingTree(right_parent)
-    end
+    -- ALWAYS build complete tree - build both parent branches
+    tree.left_parent = buildBreedingTree(left_parent)
+    tree.right_parent = buildBreedingTree(right_parent)
     
     return tree
 end
 
--- Clean breeding tree by removing duplicate drone requirements
+-- Clean breeding tree using breadth-first stock optimization + climbing optimization
 function cleanBreedingTree(tree)
     if not tree then return end
     
-    -- Count how many times each species appears as a drone requirement
-    local drone_counts = {}
-    countDroneOccurrences(tree, drone_counts)
+    -- Step 1: Complete tree is already built by buildBreedingTree
     
-    -- Remove lower occurrences of species that appear multiple times
-    removeDuplicateDrones(tree, drone_counts, {})
+    -- Step 2: Breadth-first stock optimization - remove sub-trees for species we have in stock
+    optimizeTreeByStock(tree)
+    
+    -- Step 3: Pre-exploration to analyze species occurrences and complexities
+    local species_info = {}
+    preExploreTree(tree, species_info)
+    
+    -- Step 4: Climbing optimization for drone accumulation with smart branch selection
+    local accumulated_drones = {}
+    climbingOptimizeForAccumulation(tree, accumulated_drones, species_info, nil)
+    
+    -- Step 5: Second optimization pass - smarter reuse based on princess vs drone analysis
+    smarterReuseOptimization(tree, species_info)
 end
 
 -- Count how many times each species is needed as a drone in the tree
@@ -678,25 +746,455 @@ function countDroneOccurrences(tree, counts)
     countDroneOccurrences(tree.right_parent, counts)
 end
 
--- Remove duplicate drone requirements (keep only the deepest occurrence)
-function removeDuplicateDrones(tree, drone_counts, seen)
+-- Breadth-first stock optimization - remove sub-trees for species we have in stock
+function optimizeTreeByStock(tree)
     if not tree then return end
     
-    -- If this species appears multiple times as drone and we've seen it before, skip it
-    if tree.need_drone and drone_counts[tree.species] > 1 and seen[tree.species] then
-        tree.need_drone = false
-        tree.drone_count = 0
+    -- Process tree level by level (breadth-first)
+    local current_level = {tree}
+    
+    while #current_level > 0 do
+        local next_level = {}
+        
+        for _, node in ipairs(current_level) do
+            -- Check if we have stock of this species (accounting for breeding needs)
+            local available_princesses = countAvailablePrincesses(node.species) 
+            local available_drones = countAvailableDrones(node.species)
+            
+            -- If we have stock, we can simplify this node
+            if available_princesses > 0 or available_drones > 0 then
+                -- Remove breeding sub-tree but keep as leaf node for breeding
+                node.left_parent = nil
+                node.right_parent = nil
+                node.reusing_stock = true
+                -- Don't process children of this node (they're removed)
+            else
+                -- Add children to next level for processing
+                if node.left_parent then
+                    table.insert(next_level, node.left_parent)
+                end
+                if node.right_parent then
+                    table.insert(next_level, node.right_parent)
+                end
+            end
+        end
+        
+        current_level = next_level
+    end
+end
+
+-- Count available princesses for a species
+function countAvailablePrincesses(species)
+    local count = 0
+    for _, princess in ipairs(inventory.princesses) do
+        if princess == species then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+-- Find the deepest node in the tree (furthest from root)
+function findDeepestNode(tree)
+    local deepest = tree
+    local max_depth = 0
+    
+    local function findDepth(node, depth)
+        if not node then return end
+        
+        if depth > max_depth then
+            max_depth = depth
+            deepest = node
+        end
+        
+        if node.left_parent then
+            findDepth(node.left_parent, depth + 1)
+        end
+        if node.right_parent then
+            findDepth(node.right_parent, depth + 1)
+        end
+    end
+    
+    findDepth(tree, 0)
+    return deepest
+end
+
+
+-- Calculate depth of a tree (for optimization decisions)
+function calculateTreeDepth(tree)
+    if not tree then return 0 end
+    if not tree.left_parent and not tree.right_parent then return 1 end
+    
+    local left_depth = calculateTreeDepth(tree.left_parent)
+    local right_depth = calculateTreeDepth(tree.right_parent)
+    
+    return 1 + math.max(left_depth, right_depth)
+end
+
+-- Pre-exploration to find all species and their breeding complexities
+function preExploreTree(tree, species_info, distance_from_root)
+    if not tree then return end
+    
+    distance_from_root = distance_from_root or 0
+    
+    -- Calculate depth of this subtree and distance from root
+    local subtree_depth = calculateTreeDepth(tree)
+    tree._original_depth = subtree_depth  -- Store original subtree depth
+    tree._distance_from_root = distance_from_root  -- Store distance from root
+    
+    -- Store or update species info
+    if not species_info[tree.species] then
+        species_info[tree.species] = {
+            min_subtree_depth = subtree_depth,
+            min_distance_from_root = distance_from_root,
+            occurrences = 0,
+            nodes = {}
+        }
+    else
+        -- Keep track of minimum values
+        species_info[tree.species].min_subtree_depth = math.min(species_info[tree.species].min_subtree_depth, subtree_depth)
+        species_info[tree.species].min_distance_from_root = math.min(species_info[tree.species].min_distance_from_root, distance_from_root)
+    end
+    
+    species_info[tree.species].occurrences = species_info[tree.species].occurrences + 1
+    table.insert(species_info[tree.species].nodes, tree)
+    
+    -- Recursively explore children
+    preExploreTree(tree.left_parent, species_info, distance_from_root + 1)
+    preExploreTree(tree.right_parent, species_info, distance_from_root + 1)
+end
+
+-- Climbing optimization for drone accumulation (with smart branch selection)
+function climbingOptimizeForAccumulation(tree, accumulated_drones, species_info, parent)
+    if not tree then return end
+    
+    if tree.left_parent then
+        climbingOptimizeForAccumulation(tree.left_parent, accumulated_drones, species_info, tree)
+    end
+    if tree.right_parent then
+        climbingOptimizeForAccumulation(tree.right_parent, accumulated_drones, species_info, tree)
+    end
+    
+    -- Skip if this node is already marked for reuse
+    if tree.reusing_drone then
         return
     end
     
-    -- Mark this species as seen
-    if tree.need_drone then
-        seen[tree.species] = true
+    -- Check if we've already encountered this species and can reuse
+    local species_data = species_info[tree.species]
+    if species_data and species_data.occurrences > 1 and accumulated_drones[tree.species] and accumulated_drones[tree.species] > 0 then
+        local current_distance = tree._distance_from_root or 0
+        local min_distance = species_data.min_distance_from_root
+        
+        if current_distance >= min_distance then
+            if parent and parent.left_parent and parent.right_parent then
+                local sibling = parent.left_parent == tree and parent.right_parent or parent.left_parent
+                if sibling and sibling.reusing_drone then
+                    return
+                end
+            end
+            tree.reusing_drone = true
+            accumulated_drones[tree.species] = accumulated_drones[tree.species] - 1
+            tree.left_parent = nil
+            tree.right_parent = nil
+            return
+        end
     end
     
-    -- Recursively process subtrees
-    removeDuplicateDrones(tree.left_parent, drone_counts, seen)
-    removeDuplicateDrones(tree.right_parent, drone_counts, seen)
+    -- If we're breeding this species (has parents), add it to accumulation
+    if tree.left_parent or tree.right_parent then
+        accumulated_drones[tree.species] = (accumulated_drones[tree.species] or 0) + 1
+    end
+end
+
+-- Second optimization pass: breadth-first analysis + climbing optimization
+function smarterReuseOptimization(tree, species_info)
+    if not tree then return end
+    
+    -- Step 1: Breadth-first pass to identify nodes with both parents unreused (potential for optimization)
+    local optimization_candidates = {}
+    identifyOptimizationCandidates(tree, optimization_candidates, 0)
+    
+    -- Sort candidates by distance from root (process closer to root first)
+    table.sort(optimization_candidates, function(a, b) return a.distance < b.distance end)
+    
+    -- Step 2: Climbing pass - for each candidate, try to reuse one parent without killing ancestors
+    for _, candidate in ipairs(optimization_candidates) do
+        optimizeNodeParents(candidate.node, tree, species_info)
+    end
+end
+
+-- Breadth-first identification of nodes that have both parents unreused (optimization candidates)
+function identifyOptimizationCandidates(tree, candidates, distance)
+    if not tree then return end
+    
+    -- Check if this node has both parents unreused (potential for optimization)
+    if tree.left_parent and tree.right_parent then
+        local left_reused = tree.left_parent.reusing_drone or false
+        local right_reused = tree.right_parent.reusing_drone or false
+        
+        if not left_reused and not right_reused then
+            -- This node has both parents unreused - it's a candidate for optimization
+            table.insert(candidates, {node = tree, distance = distance})
+        end
+    end
+    
+    -- Continue breadth-first traversal
+    identifyOptimizationCandidates(tree.left_parent, candidates, distance + 1)
+    identifyOptimizationCandidates(tree.right_parent, candidates, distance + 1)
+end
+
+-- Try to optimize a node's parents by reusing one of them (climbing approach)
+function optimizeNodeParents(node, root_tree, species_info)
+    if not node or not node.left_parent or not node.right_parent then
+        return
+    end
+    
+    local left_parent = node.left_parent
+    local right_parent = node.right_parent
+    local left_reused = left_parent.reusing_drone
+    local right_reused = right_parent.reusing_drone
+
+    -- Ensure at least one parent remains available for breeding
+    if left_reused or right_reused then
+        return
+    end
+    
+    if canReuseParentSafely(left_parent, root_tree, species_info) then
+        left_parent.reusing_drone = true
+        left_parent.left_parent = nil
+        left_parent.right_parent = nil
+        return
+    end
+    
+    if canReuseParentSafely(right_parent, root_tree, species_info) then
+        right_parent.reusing_drone = true
+        right_parent.left_parent = nil
+        right_parent.right_parent = nil
+        return
+    end
+end
+
+-- Check if a parent can be safely reused without "killing ancestors"
+function canReuseParentSafely(parent, root_tree, species_info)
+    if not parent or parent.reusing_drone then
+        return false -- Already reused or invalid
+    end
+    
+    -- Check if this parent species is available elsewhere in the tree
+    local parent_species = parent.species
+    local available_sources = countAvailableSourcesForSpecies(parent_species, root_tree, parent)
+    
+    -- We need at least one other source for this species (excluding this one)
+    if available_sources < 1 then
+        return false -- Would kill our only source for this species
+    end
+    
+    -- Check if we have this species in stock
+    if hasSpeciesDrone(parent_species) then
+        return true -- We have it in stock, safe to reuse
+    end
+    
+    return available_sources > 0 -- Safe if there are other sources
+end
+
+-- Count how many other sources exist for a species (excluding the given node)
+function countAvailableSourcesForSpecies(species, tree, exclude_node)
+    if not tree or tree == exclude_node then
+        return 0
+    end
+    
+    local count = 0
+    
+    -- If this node produces the species and is not reused, count it
+    if tree.species == species and not tree.reusing_drone and (tree.left_parent or tree.right_parent) then
+        count = count + 1
+    end
+    
+    -- Recursively count in subtrees
+    count = count + countAvailableSourcesForSpecies(species, tree.left_parent, exclude_node)
+    count = count + countAvailableSourcesForSpecies(species, tree.right_parent, exclude_node)
+    
+    return count
+end
+
+-- Find the best node to keep as the producer (closest to root, most efficient)
+function findBestProducer(nodes)
+    local best = nodes[1]
+    local best_distance = best._distance_from_root or 0
+    
+    for i = 2, #nodes do
+        local node = nodes[i]
+        local distance = node._distance_from_root or 0
+        
+        -- Prefer nodes closer to root (lower distance)
+        if distance < best_distance then
+            best = node
+            best_distance = distance
+        end
+    end
+    
+    return best
+end
+
+-- Check if a node can be safely reused without creating dependency issues
+function canSafelyReuseNode(node, species, species_info)
+    if not node.left_parent or not node.right_parent then
+        return true -- Leaf nodes can always be reused safely
+    end
+    
+    -- Check if reusing this node would create a dependency on base species that we can't fulfill
+    local required_princesses = {}
+    findPrincessRequirementsForNode(node, required_princesses)
+    
+    -- For each required princess species, check if we have other ways to obtain it
+    for req_species, count in pairs(required_princesses) do
+        if not canFulfillPrincessRequirement(req_species, count, species_info) then
+            return false
+        end
+    end
+    
+    return true
+end
+
+-- Find princess requirements that would be lost if we reuse this node
+function findPrincessRequirementsForNode(node, requirements)
+    if not node then return end
+    
+    -- If this is a leaf node that needs a princess, count it
+    if not node.left_parent and not node.right_parent then
+        if node.need_princess then
+            requirements[node.species] = (requirements[node.species] or 0) + 1
+        end
+        return
+    end
+    
+    -- Recursively check children
+    findPrincessRequirementsForNode(node.left_parent, requirements)
+    findPrincessRequirementsForNode(node.right_parent, requirements)
+end
+
+-- Check if a princess requirement can be fulfilled by other nodes in the tree
+function canFulfillPrincessRequirement(species, count, species_info)
+    -- If we have the species in stock, we can fulfill it
+    if hasSpeciesPrincess(species) then
+        return true
+    end
+    
+    -- If there are other non-reused occurrences of this species that can produce it, we're good
+    local species_data = species_info[species]
+    if species_data then
+        local available_producers = 0
+        for _, node in ipairs(species_data.nodes) do
+            if not node.reusing_drone and (node.left_parent or node.right_parent) then
+                available_producers = available_producers + 1
+            end
+        end
+        
+        if available_producers >= count then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Check if the current tree has any impossible parents (both children reused)
+function treeHasImpossibleParents(species_info)
+    -- Check all species nodes to see if any parent has both children reused
+    for species, data in pairs(species_info) do
+        for _, node in ipairs(data.nodes) do
+            if node.left_parent and node.right_parent then
+                local left_reused = node.left_parent.reusing_drone or false
+                local right_reused = node.right_parent.reusing_drone or false
+                
+                if left_reused and right_reused then
+                    return true -- Found an impossible parent
+                end
+            end
+        end
+    end
+    
+    return false -- No impossible parents found
+end
+
+-- Validate tree after optimization to ensure no impossible parent-child relationships
+function validateTreeAfterOptimization(tree)
+    if not tree then return end
+    
+    -- Check this node
+    if tree.left_parent and tree.right_parent then
+        -- If both children exist, at least one must not be reused
+        local left_reused = tree.left_parent.reusing_drone or false
+        local right_reused = tree.right_parent.reusing_drone or false
+        
+        if left_reused and right_reused then
+            -- CRITICAL ERROR: Both children are reused, this parent cannot be bred
+            -- Fix by un-reusing one of the children (prefer the deeper/more complex one)
+            fixImpossibleParent(tree)
+        end
+    end
+    
+    -- Recursively validate children
+    validateTreeAfterOptimization(tree.left_parent)
+    validateTreeAfterOptimization(tree.right_parent)
+end
+
+-- Fix a parent node that has both children reused (impossible situation)
+function fixImpossibleParent(parent)
+    if not parent.left_parent or not parent.right_parent then
+        return -- Nothing to fix
+    end
+    
+    local left_child = parent.left_parent
+    local right_child = parent.right_parent
+    
+    -- Choose which child to un-reuse (prefer keeping the simpler one reused)
+    local left_depth = left_child._original_depth or 0
+    local right_depth = right_child._original_depth or 0
+    
+    if left_depth >= right_depth then
+        -- Left is deeper/more complex, un-reuse it and restore its breeding tree
+        unreuseNode(left_child)
+    else
+        -- Right is deeper/more complex, un-reuse it and restore its breeding tree
+        unreuseNode(right_child)
+    end
+end
+
+-- Un-reuse a node by restoring its breeding capability (preserving optimizations where possible)
+function unreuseNode(node)
+    if not node or not node.reusing_drone then
+        return -- Nothing to do
+    end
+    
+    -- Clear the reuse flag
+    node.reusing_drone = false
+    
+    -- Restore the breeding tree (we need to rebuild it)
+    if mutations[node.species] then
+        local parents = mutations[node.species].parents
+        node.left_parent = buildBreedingTree(parents[1])
+        node.right_parent = buildBreedingTree(parents[2])
+        
+        -- Apply optimizations to the restored subtree
+        optimizeTreeByStock(node)
+        
+        -- Re-apply reuse optimizations to the subtree (but avoid the validation loop)
+        local species_info = {}
+        preExploreTree(node, species_info)
+        local accumulated_drones = {}
+        climbingOptimizeForAccumulation(node, accumulated_drones, species_info)
+    end
+end
+
+-- Apply the climbing optimization results to the tree
+function applyClimbingOptimization(tree, available_drones)
+    if not tree then return end
+    
+    -- Apply reusing_drone markers that were set during climbing
+    applyClimbingOptimization(tree.left_parent, available_drones)
+    applyClimbingOptimization(tree.right_parent, available_drones)
 end
 
 -- Find all starting princesses needed for the tree
@@ -724,36 +1222,255 @@ function findStartingPrincesses(tree)
     return princesses
 end
 
--- Calculate drone requirements with accumulation counts
+-- Recursively find all base species needed for a tree node
+function findBaseSpeciesNeeded(tree, base_princesses, base_drones)
+    if not tree then return end
+    
+    -- If this is a base species (no mutation), count it
+    if not mutations[tree.species] then
+        if tree.need_princess then
+            base_princesses[tree.species] = (base_princesses[tree.species] or 0) + 1
+        end
+        if tree.need_drone and not tree.reusing_drone then
+            base_drones[tree.species] = (base_drones[tree.species] or 0) + 1
+        end
+        return
+    end
+    
+    -- If this is an intermediate species, recurse to its components
+    findBaseSpeciesNeeded(tree.left_parent, base_princesses, base_drones)
+    findBaseSpeciesNeeded(tree.right_parent, base_princesses, base_drones)
+end
+
+-- Calculate missing base species needed for the breeding plan
+function calculateMissingBaseSpecies(tree, drone_requirements)
+    local base_princesses_needed = {}
+    local base_drones_needed = {}
+    
+    -- Find all base species needed by traversing the complete tree
+    findBaseSpeciesNeeded(tree, base_princesses_needed, base_drones_needed)
+    
+    -- Calculate missing princesses (base species only)
+    local missing_princesses = {}
+    for species, needed in pairs(base_princesses_needed) do
+        local available = 0
+        if hasSpeciesPrincess(species) then
+            available = 1 -- Simple count - could be enhanced to track actual quantities
+        end
+        if needed > available then
+            missing_princesses[species] = needed - available
+        end
+    end
+    
+    -- Calculate missing drones (base species only)
+    local missing_drones = {}
+    for species, needed in pairs(base_drones_needed) do
+        local available = 0
+        if hasSpeciesDrone(species) then
+            available = 1 -- Simple count - could be enhanced to track actual quantities  
+        end
+        if needed > available then
+            missing_drones[species] = needed - available
+        end
+    end
+    
+    return missing_princesses, missing_drones
+end
+
+-- Sanity check: detect species that appear multiple times but weren't reused
+function detectMissedReuseOpportunities(tree)
+    local species_occurrences = {}
+    local missed_opportunities = {}
+    
+    -- Check if a node can be reused based on sibling constraints
+    local function canNodeBeReused(node, parent_context)
+        if not parent_context or not parent_context.parent then
+            return true -- Root or orphaned nodes can be reused
+        end
+        
+        local parent = parent_context.parent
+        local sibling = parent_context.side == "left" and parent.right_parent or parent.left_parent
+        
+        -- If sibling is reused, this node cannot be reused (would create impossible parent)
+        if sibling and sibling.reusing_drone then
+            return false
+        end
+        
+        return true
+    end
+    
+    -- Count all occurrences of each species in the tree, tracking sibling relationships
+    local function countSpeciesOccurrences(node, parent_context)
+        if not node then return end
+        
+        if not species_occurrences[node.species] then
+            species_occurrences[node.species] = {
+                total = 0,
+                reused = 0,
+                nodes = {},
+                reusable_nodes = {}
+            }
+        end
+        
+        species_occurrences[node.species].total = species_occurrences[node.species].total + 1
+        table.insert(species_occurrences[node.species].nodes, node)
+        
+        if node.reusing_drone then
+            species_occurrences[node.species].reused = species_occurrences[node.species].reused + 1
+        else
+            -- Check if this node can actually be reused (no reusing siblings)
+            if canNodeBeReused(node, parent_context) then
+                table.insert(species_occurrences[node.species].reusable_nodes, node)
+            end
+        end
+        
+        countSpeciesOccurrences(node.left_parent, {parent = node, side = "left"})
+        countSpeciesOccurrences(node.right_parent, {parent = node, side = "right"})
+    end
+    
+    countSpeciesOccurrences(tree, nil)
+    
+    -- Identify missed opportunities (only for intermediate species, considering sibling constraints)
+    for species, data in pairs(species_occurrences) do
+        -- Skip base species (species without mutations) - their multiple occurrences are expected
+        if mutations[species] then
+            local total_reusable = #data.reusable_nodes
+            
+            if data.total > 1 and data.reused == 0 and total_reusable > 0 then
+                -- Multiple occurrences but no reuse, and some could be reused
+                missed_opportunities[species] = {
+                    occurrences = data.total,
+                    nodes = data.nodes,
+                    potential_additional_reuse = total_reusable - 1 -- Keep at least one
+                }
+            elseif total_reusable > 1 and data.reused < total_reusable - 1 then
+                -- More reusable nodes than we're currently reusing
+                missed_opportunities[species] = {
+                    occurrences = data.total,
+                    reused = data.reused,
+                    potential_additional_reuse = (total_reusable - 1) - data.reused,
+                    nodes = data.nodes
+                }
+            end
+        end
+    end
+    
+    return missed_opportunities
+end
+
+-- Sanity check: verify tree consistency
+function performTreeSanityChecks(tree, target)
+    local warnings = {}
+    local errors = {}
+    
+    -- Check for missed reuse opportunities (WARNING - not fatal)
+    local missed_reuse = detectMissedReuseOpportunities(tree)
+    if next(missed_reuse) then
+        table.insert(warnings, {
+            type = "missed_reuse",
+            severity = "warning",
+            details = missed_reuse,
+            message = "Potential missed reuse opportunities detected"
+        })
+    end
+    
+    -- Check for reused nodes that still have children (ERROR - fatal)
+    local function checkReuseConsistency(node, path)
+        if not node then return end
+        
+        if node.reusing_drone and (node.left_parent or node.right_parent) then
+            table.insert(errors, {
+                type = "reuse_inconsistency",
+                severity = "error", 
+                species = node.species,
+                path = path,
+                message = "CRITICAL: Reused node " .. node.species .. " still has breeding children"
+            })
+        end
+        
+        if node.left_parent then
+            checkReuseConsistency(node.left_parent, path .. "->" .. node.left_parent.species)
+        end
+        if node.right_parent then
+            checkReuseConsistency(node.right_parent, path .. "->" .. node.right_parent.species)
+        end
+    end
+    
+    checkReuseConsistency(tree, target)
+    
+    -- Check for impossible parents (ERROR - fatal)
+    local function checkImpossibleParents(node, path)
+        if not node then return end
+        
+        if node.left_parent and node.right_parent then
+            local left_reused = node.left_parent.reusing_drone or false
+            local right_reused = node.right_parent.reusing_drone or false
+            
+            if left_reused and right_reused then
+                table.insert(errors, {
+                    type = "impossible_parent",
+                    severity = "error",
+                    species = node.species, 
+                    path = path,
+                    message = "CRITICAL: " .. node.species .. " has both children reused (impossible to breed)"
+                })
+            end
+        end
+        
+        if node.left_parent then
+            checkImpossibleParents(node.left_parent, path .. "->" .. node.left_parent.species)
+        end
+        if node.right_parent then
+            checkImpossibleParents(node.right_parent, path .. "->" .. node.right_parent.species)
+        end
+    end
+    
+    checkImpossibleParents(tree, target)
+    
+    return {
+        warnings = warnings,
+        errors = errors,
+        has_errors = #errors > 0,
+        has_warnings = #warnings > 0
+    }
+end
+
+-- Calculate drone requirements with accumulation counts (base species only)
 function calculateDroneRequirements(tree)
     if not tree then return {} end
     
     local requirements = {}
     
-    -- Count how many times each species is used as drone in the tree
-    countTreeDroneUsage(tree, requirements)
+    -- Calculate base species drone requirements by accumulating all intermediate needs
+    local base_drones_needed = {}
+    calculateBaseDroneRequirements(tree, base_drones_needed)
+    
+    -- Convert to the expected format
+    for species, count in pairs(base_drones_needed) do
+        requirements[species] = {
+            available = countAvailableDrones(species),
+            needed = count
+        }
+    end
     
     return requirements
 end
 
--- Count drone usage throughout the tree
-function countTreeDroneUsage(tree, requirements)
+-- Calculate base species drone requirements by traversing and accumulating
+function calculateBaseDroneRequirements(tree, base_drones_needed)
     if not tree then return end
     
-    -- If this node needs a drone, count it
-    if tree.need_drone then
-        if not requirements[tree.species] then
-            requirements[tree.species] = {
-                available = countAvailableDrones(tree.species),
-                needed = 0
-            }
+    -- If this is a base species (no mutation) that needs a drone and is not reusing, count it
+    if not mutations[tree.species] then
+        if tree.need_drone and not tree.reusing_drone then
+            base_drones_needed[tree.species] = (base_drones_needed[tree.species] or 0) + 1
         end
-        requirements[tree.species].needed = requirements[tree.species].needed + 1
+        return
     end
     
-    -- Recursively count in subtrees
-    countTreeDroneUsage(tree.left_parent, requirements)
-    countTreeDroneUsage(tree.right_parent, requirements)
+    -- For intermediate species, recurse to their components
+    calculateBaseDroneRequirements(tree.left_parent, base_drones_needed)
+    calculateBaseDroneRequirements(tree.right_parent, base_drones_needed)
 end
 
 -- Count available drones for a species
@@ -827,6 +1544,7 @@ end
 --- @return string|nil gunName Name of the gun item if found
 function checkBeebeeGun()
     local stack = inv_controller.getStackInSlot(config.mech_user_inventory_side, config.beebee_gun_slot)
+   
     if stack and stack.name then
         local name = stack.name:lower()
         if name:find("beebee") or name:find("bee.*gun") then
@@ -1199,21 +1917,44 @@ function displayTree(tree, prefix, isLast)
     local status_drone = hasSpeciesDrone(tree.species) and "D" or " "
     local breeding_marker = (tree.left_parent or tree.right_parent) and " *" or ""
     
-    print(prefix .. connector .. tree.species .. " [" .. status_princess .. status_drone .. "]" .. breeding_marker)
+    -- Add optimization marker for nodes that reuse drones from elsewhere
+    local optimization_marker = ""
+    if tree.reusing_stock then
+        optimization_marker = " (from stock)"
+    elseif tree.reusing_drone then
+        optimization_marker = " (reusing)"
+    end
+    
+    print(prefix .. connector .. tree.species .. " [" .. status_princess .. status_drone .. "]" .. breeding_marker .. optimization_marker)
     
     local newPrefix = prefix .. (isLast and "    " or "│   ")
     
-    -- Display left child (princess branch)
-    if tree.left_parent then
-        print(newPrefix .. "├── Princess from:")
-        displayTree(tree.left_parent, newPrefix .. "│   ", false)
+    -- Display all children to show complete breeding structure
+    if tree.left_parent and tree.right_parent then
+        -- Both parents exist
+        displayTree(tree.left_parent, newPrefix, false)
+        displayTree(tree.right_parent, newPrefix, true)
+    elseif tree.left_parent then
+        -- Only princess parent (left)
+        displayTree(tree.left_parent, newPrefix, true)
+    elseif tree.right_parent then
+        -- Only drone parent (right) 
+        displayTree(tree.right_parent, newPrefix, true)
+    end
+end
+
+-- Helper function to determine if a node should be displayed
+function shouldDisplayNode(tree)
+    if not tree then return false end
+    
+    -- Always show nodes that need breeding (have parents)
+    if tree.left_parent or tree.right_parent then
+        return true
     end
     
-    -- Display right child (drone branch)
-    if tree.right_parent then
-        print(newPrefix .. "└── Drone from:")
-        displayTree(tree.right_parent, newPrefix .. "    ", true)
-    end
+    -- Always show leaf nodes - they represent essential breeding components
+    -- Even if they don't need drones, they might be needed as princesses
+    return true
 end
 
 -- Get user confirmation
@@ -1872,10 +2613,10 @@ function executeBreedingTree(tree, drone_requirements, hasAPI, total_steps)
         })
         
         -- Check if we need accumulation for the drone
-        local drone_req = drone_requirements[drone_parent] + 1  -- +1 to keep stock of this bee
-        if drone_req and drone_req.needed > drone_req.available then
+        local drone_req = drone_requirements[drone_parent]
+        if drone_req and drone_req.needed and drone_req.available and drone_req.needed > drone_req.available then
             local shortage = drone_req.needed - drone_req.available
-            local total_needed = shortage + config.add_drone_count
+            local total_needed = shortage + (config.add_drone_count or 1)
 
             for cycle = 1, total_needed do
                 drawGUI({
@@ -1893,7 +2634,9 @@ function executeBreedingTree(tree, drone_requirements, hasAPI, total_steps)
                 
                 -- TODO: if we get multiple drones per cycle, we should update available count accordingly
                 -- Update available count
-                drone_req.available = drone_req.available + 1
+                if drone_req.available then
+                    drone_req.available = drone_req.available + 1
+                end
             end
         end
         
@@ -2047,34 +2790,40 @@ function main()
         
         local breeding_plan = calculateBreedingPath(target)
         
-        while true do
-            setupDisplay()
-            local success = displayBreedingPlan(target, breeding_plan)
-            
-            if not success then
-                print("Press anything to continue...")
-                io.read()
-                break
-            end
-            
-            local choice = getConfirmation()
-            
-            if choice == 1 then
-                executeBreeding(target, breeding_plan)
-                print("Press anything to continue...")
-                io.read()
-                break
-            elseif choice == 2 then
-                scanInventory()
-                breeding_plan = calculateBreedingPath(target)
-            elseif choice == 3 then
-                break
-            elseif choice == 4 then
-                print("Goodbye!")
-                return
-            else
-                print("Invalid choice. Press anything to continue...")
-                io.read()
+        -- Check if plan failed due to critical errors
+        if breeding_plan and breeding_plan.plan_failed then
+            print("Press anything to continue...")
+            io.read()
+        else
+            while true do
+                setupDisplay()
+                local success = displayBreedingPlan(target, breeding_plan)
+                
+                if not success then
+                    print("Press anything to continue...")
+                    io.read()
+                    break
+                end
+                
+                local choice = getConfirmation()
+                
+                if choice == 1 then
+                    executeBreeding(target, breeding_plan)
+                    print("Press anything to continue...")
+                    io.read()
+                    break
+                elseif choice == 2 then
+                    scanInventory()
+                    breeding_plan = calculateBreedingPath(target)
+                elseif choice == 3 then
+                    break
+                elseif choice == 4 then
+                    print("Goodbye!")
+                    return
+                else
+                    print("Invalid choice. Press anything to continue...")
+                    io.read()
+                end
             end
         end
     end
@@ -2089,7 +2838,12 @@ if ... then
         buildBreedingTree = buildBreedingTree,
         findStartingPrincesses = findStartingPrincesses, 
         calculateDroneRequirements = calculateDroneRequirements,
-        printBreedingTree = printBreedingTree,
+        displayTree = displayTree,
+        
+        -- Execution functions
+        executeBreedingTree = executeBreedingTree,
+        executeSingleBreedingStep = executeSingleBreedingStep,
+        executeAccumulationCycle = executeAccumulationCycle,
         
         -- Utility functions
         getSideName = getSideName,
