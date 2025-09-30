@@ -1,0 +1,95 @@
+# Pre-commit configuration for HiveMind
+# See https://pre-commit.com for more information
+# Install: pip install pre-commit
+# Setup: pre-commit install
+
+repos:
+  # Local hooks for Lua-specific tests
+  - repo: local
+    hooks:
+      # Lua syntax validation
+      - id: lua-syntax-check
+        name: Lua Syntax Check
+        entry: lua
+        args: ['-e', 'local files = {"main.lua", "test_planning.lua", "test_example.lua"}; local errors = false; for _, file in ipairs(files) do local f = io.open(file, "r"); if f then local content = f:read("*all"); f:close(); local func, err = load(content, file); if not func then print("❌ Syntax error in " .. file .. ": " .. err); errors = true; else print("✅ " .. file .. " syntax OK"); end; else print("⚠️  Could not read " .. file); end; end; if errors then os.exit(1); end']
+        language: system
+        files: '\.lua$'
+        pass_filenames: false
+        
+      # Core planning tests
+      - id: hivemind-planning-tests
+        name: HiveMind Planning Tests
+        entry: lua
+        args: ['-e', 'package.path = package.path .. ";./?.lua"; local test_planning = require("test_planning"); print("Running HiveMind planning tests..."); local success = test_planning.runAllTests(); if not success then print("❌ Planning tests failed"); os.exit(1); else print("✅ Planning tests passed"); end']
+        language: system
+        files: '(main|test_planning)\.lua$'
+        pass_filenames: false
+        
+      # Execution tests
+      - id: hivemind-execution-tests
+        name: HiveMind Execution Tests
+        entry: lua
+        args: ['-e', 'package.path = package.path .. ";./?.lua"; local test_planning = require("test_planning"); print("Running HiveMind execution tests..."); local success = test_planning.testExecuteBreedingTree(); if not success then print("❌ Execution tests failed"); os.exit(1); else print("✅ Execution tests passed"); end']
+        language: system
+        files: '(main|test_planning)\.lua$'
+        pass_filenames: false
+        
+      # Error handling tests
+      - id: hivemind-error-handling
+        name: HiveMind Error Handling Tests
+        entry: lua
+        args: ['-e', 'package.path = package.path .. ";./?.lua"; local test_planning = require("test_planning"); print("Running HiveMind error handling tests..."); test_planning.testExecuteBreedingTreeErrorHandling(); print("✅ Error handling tests completed");']
+        language: system
+        files: '(main|test_planning)\.lua$'
+        pass_filenames: false
+        
+      # Example usage validation
+      - id: hivemind-example-tests
+        name: HiveMind Example Tests
+        entry: lua
+        args: ['test_example.lua']
+        language: system
+        files: 'test_example\.lua$'
+        pass_filenames: false
+
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # Basic file checks
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+      - id: check-yaml
+        files: '\.(yaml|yml)$'
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-case-conflict
+      - id: check-merge-conflict
+
+  # Optional: Performance tests (only run manually)
+  - repo: local
+    hooks:
+      - id: hivemind-performance-tests
+        name: HiveMind Performance Tests (Manual)
+        entry: lua
+        args: ['-e', 'package.path = package.path .. ";./?.lua"; local test_planning = require("test_planning"); print("Running performance tests..."); test_planning.performanceTest(); print("✅ Performance tests completed");']
+        language: system
+        files: '(main|test_planning)\.lua$'
+        pass_filenames: false
+        stages: [manual]  # Only run when explicitly requested
+        
+      - id: hivemind-stress-tests
+        name: HiveMind Stress Tests (Manual)
+        entry: lua
+        args: ['-e', 'package.path = package.path .. ";./?.lua"; local test_planning = require("test_planning"); print("Running complexity stress tests..."); test_planning.complexityStressTest(); print("✅ Stress tests completed");']
+        language: system
+        files: '(main|test_planning)\.lua$'
+        pass_filenames: false
+        stages: [manual]  # Only run when explicitly requested
+
+# Configuration
+default_stages: [commit]
+fail_fast: false  # Run all hooks even if one fails
+minimum_pre_commit_version: '2.9.0'
