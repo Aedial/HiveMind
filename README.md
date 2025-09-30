@@ -2,25 +2,35 @@
 
 An OpenComputers program for automating bee breeding using Forestry, Gendustry, and related mods. The system calculates optimal breeding paths and executes them automatically using Advanced Mutatron and Industrial Apiary setups.
 
+## Quick Start
+
+1. **Installation**: Copy `main.lua` to your OpenComputers computer
+2. **Testing Setup**: Run `./setup-precommit.sh` (Linux/Mac) or `setup-precommit.bat` (Windows)
+3. **Usage**: Execute with `lua main.lua` and follow the interactive menu
+
+📖 See [TESTING.md](TESTING.md) for the full test guide and developer workflow.
+
 ## Features
 
 - Automated breeding path calculation with golden path strategy
-- Support for hundreds of bee species across multiple mods (Forestry, MagicBees, ExtraBees)
+- Support for hundreds of bee species across multiple mods (Forestry, MagicBees, ExtraBees, Career Bees, MeatballCraft)
 - Drone accumulation and resource management
 - Automatic item movement between machines
 - Gendustry API integration with redstone fallback
 - Comprehensive inventory scanning and management
+- Optional status lamp and chat notifications
+- Complete test suite with breeding path analysis and execution validation
 
 ## Hardware Requirements
 
 ### Essential Components
 - OpenComputers computer with Inventory Controller upgrade
 - Advanced Mutatron (Gendustry)
-- Industrial Apiary (Forestry)
+- Industrial Apiary (Gendustry)
 - Mechanical User (Extra Utilities or similar)
 - Beebee gun with Assassin Queen (for Mechanical User)
-- Input chest (for starting materials)
-- Output chest (for products)
+- Input inventory (for starting materials)
+- Output inventory (for products)
 - Redstone connection to Mechanical User
 
 ### Optional Components
@@ -28,7 +38,7 @@ An OpenComputers program for automating bee breeding using Forestry, Gendustry, 
 - Additional storage chests
 - Power supply for machines
 - Colored Lamp (OpenLights mod recommended, or similar programmable lighting)
-- Chat Box from Random Things (for chat notifications)
+- Notification Interface from Random Things (for chat notifications)
 
 ## Physical Setup
 
@@ -81,9 +91,11 @@ local config = {
     output_chest_side = sides.down,   -- Output chest location
     apiary_wait_time = 30,            -- Apiary processing time (seconds)
     beebee_gun_slot = 1,              -- Beebee gun slot in Mechanical User
-    -- Additional slot configurations available
+    enabled_mods = {"Forestry", "MagicBees", "ExtraBees", "Career Bees", "MeatballCraft"}, -- Limit included mods
 }
 ```
+
+Tip: Use enabled_mods to restrict which mods’ species are considered when planning.
 
 ## Usage
 
@@ -113,23 +125,21 @@ The program uses a three-phase approach:
 #### Colored Lamp Status
 When a programmable colored lamp is connected, it displays the current system status:
 
-**Compatible Mods:**
+Compatible Mods:
 - OpenLights (recommended - has `coloredlamp` component)
-- RFTools screens/displays  
-- Actually Additions lamps
-- Any mod with `setLampColor()` or similar API
+- Any mod exposing a `setLampColor()`-like API
 
-**Status Colors:**
-- **White** - Idle/Ready for commands
-- **Green** - Working normally (breeding, processing)
-- **Yellow** - Waiting for resources (beebee gun, materials)
-- **Red** - Error state (requires user intervention)
-- **Orange** - Manually paused
-- **Blue** - Task completed successfully
-- **Purple** - Operation aborted by user
+Status Colors:
+- White - Idle/Ready for commands
+- Green - Working normally (breeding, processing)
+- Yellow - Waiting for resources (beebee gun, materials)
+- Red - Error state (requires user intervention)
+- Orange - Manually paused
+- Blue - Task completed successfully
+- Purple - Operation aborted by user
 
 #### Chat Notifications
-When a Chat Box is connected, the system sends important status updates:
+When a Notification Interface is connected, the system sends important status updates:
 - System startup and breeding sequence start
 - Error messages with details
 - Major completion notifications
@@ -137,26 +147,40 @@ When a Chat Box is connected, the system sends important status updates:
 
 Configure in main.lua:
 ```lua
-config.use_status_lamp = true           -- Enable colored lamp
-config.use_chat_notifications = true    -- Enable chat messages
-config.chat_player_name = nil           -- Broadcast to all (or set specific player)
+config.use_status_lamp = true
+config.use_chat_notifications = true
+config.chat_player_name = nil -- Broadcast to all (or set specific player)
 ```
 
-**Example Chat Messages:**
-- `[HiveMind] System started - Ready for commands`
-- `[HiveMind] Starting breeding sequence (Imperial)`
-- `[HiveMind] ERROR: Beebee gun not found in Mechanical User slot 1`
-- `[HiveMind] Resumed: Issue fixed (Imperial)`
-- `[HiveMind] All breeding completed successfully! (Imperial)`
+## Testing and Analysis
+
+For developer tests, run the planning and execution test suite and view analysis artifacts. See TESTING.md for commands and details.
+
+### Analysis Artifacts
+Tests generate detailed analysis files in the `Artifacts/` folder (auto-created on first test run):
+
+- `BeeSpecies_analysis.txt` — Complete breeding tree analysis
+  - Visual breeding tree with dependency hints
+  - Required starting princesses and drone counts
+  - Missing species identification
+  - Optimization recommendations and sanity checks
+
+- `BeeSpecies_execution_*.txt` — Execution testing results
+  - Detailed execution logs with GUI interactions
+  - Breeding step validation and failure analysis
+  - Mock function call traces for debugging
+  - Performance metrics and timing information
 
 ## Supported Mods
 
 - Forestry (base bees and mutations)
 - MagicBees (mystical and thaumic species)
 - ExtraBees/Binnie's Mods (industrial, stone, color variants)
+- Career Bees (job-themed species)
+- MeatballCraft (custom chains and late-game species)
 - Gendustry (automation and genetic manipulation)
 
-The bee database contains mutation data for 80+ species and can be extended by modifying the loadBeeDatabase() function.
+The bee database is defined in `loadBeeDatabase()` in `main.lua` and can be extended.
 
 ## Troubleshooting
 
@@ -164,7 +188,7 @@ The bee database contains mutation data for 80+ species and can be extended by m
 - "Inventory Controller upgrade required": Install the upgrade in the computer
 - "No inventories found": Check that chests are adjacent to computer
 - "Could not find X bee": Ensure required parent species are available in input/output chests
-- "Waiting for beebee gun": Gun is missing or being recharged - program will wait automatically
+- "Waiting for beebee gun": Gun is missing or being recharged — program will wait automatically
 - API failures: Verify Adapter blocks are connected to Gendustry machines
 
 ### Machine Problems
@@ -173,20 +197,20 @@ The bee database contains mutation data for 80+ species and can be extended by m
 - Items not moving: Confirm inventory controller has access to all sides
 
 ### Performance
-- Large breeding trees may take significant time to complete
-- Adjust apiary_wait_time based on your apiary's speed
+- Large breeding trees may take some time to complete
+- Adjust `apiary_wait_time` based on your apiary's speed
 - Consider running accumulation cycles during off-peak times
 
 ## Technical Details
 
 ### Breeding Algorithm
-The system traces back from target species to find the shortest mutation path, then plans drone acquisition separately. This prevents resource conflicts and ensures all required materials are available before starting the golden path.
+The system builds a complete parent tree for the target, then applies stock-aware pruning and reuse optimizations to minimize steps while keeping execution feasible.
 
 ### Resource Management
-All produced queens and drones are automatically tracked and made available for future breeding steps. The system can pull materials from input chest, output chest, and any connected storage. The program automatically waits for the beebee gun to be available before activating the Mechanical User, handling charging cycles seamlessly.
+Produced queens and drones are tracked and reused. Materials can be sourced from input/output chests and adjacent storage. The program automatically waits for the beebee gun before activating the Mechanical User.
 
 ### API Integration
-If Gendustry API is available through Adapter blocks, the program will attempt to use it for enhanced machine control. Otherwise, it falls back to redstone activation via Mechanical User.
+If Gendustry API is available via Adapter blocks, the program uses it for machine control; otherwise it falls back to redstone activation through the Mechanical User.
 
 ## Limitations
 

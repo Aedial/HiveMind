@@ -8,7 +8,7 @@ Type Definitions:
 
 @class MutationData
 @field parent1 string First parent species name
-@field parent2 string Second parent species name  
+@field parent2 string Second parent species name
 @field mod string Mod name that adds this species
 
 @class GUIState
@@ -39,7 +39,7 @@ local gpu = component.gpu
 local redstone = component.redstone
 
 -- Optional components for status indicators
-local chat_box = component.isAvailable("chat_box") and component.chat_box or nil
+local notification_interface = component.isAvailable("notification_interface") and component.notification_interface or nil
 local coloredlamp = component.isAvailable("coloredlamp") and component.coloredlamp or nil
 
 -- Check for required components
@@ -57,7 +57,7 @@ local adapters = {}
 --- @return boolean hasComponents True if any Gendustry components were found
 local function scanGendustryComponents()
     print("Scanning for Gendustry components...")
-    
+
     -- Check for direct component names (if Gendustry provides them)
     local possible_names = {
         "gendustry_mutatron", "mutatron", "advanced_mutatron",
@@ -65,14 +65,14 @@ local function scanGendustryComponents()
         "gendustry_sampler", "sampler", "genetic_sampler",
         "gendustry_transposer", "transposer", "genetic_transposer"
     }
-    
+
     for _, name in ipairs(possible_names) do
         if component.isAvailable(name) then
             gendustry[name] = component.getPrimary(name)
             print("Found Gendustry component: " .. name)
         end
     end
-    
+
     -- Scan all available components for potential Gendustry machines
     for address, componentType in component.list() do
         if componentType:find("gendustry") or componentType:find("mutatron") or componentType:find("imprinter") then
@@ -80,7 +80,7 @@ local function scanGendustryComponents()
             gendustry[componentType] = component.proxy(address)
         end
     end
-    
+
     return next(gendustry) ~= nil
 end
 
@@ -101,7 +101,7 @@ end
 --- @return table<string, {parent1: string, parent2: string, mod: string}> mutations Map of species to their parent combinations
 local function loadBeeDatabase()
     local mutations = {}
-    
+
     -- Forestry Base Bees (https://github.com/ForestryMC/ForestryMC/blob/mc-1.12/src/main/java/forestry/apiculture/genetics/BeeBranchDefinition.java)
     mutations["Imperial"] = {parents = {"Noble", "Majestic"}, mod = "Forestry"}
     mutations["Edenic"] = {parents = {"Tropical", "Exotic"}, mod = "Forestry"}
@@ -227,7 +227,7 @@ local function loadBeeDatabase()
     mutations["Mutable"] = {parents = {"Unusual", "Eldritch"}, mod = "MagicBees"}
     mutations["Mysterious"] = {parents = {"Forest", "Common"}, mod = "MagicBees"}
     mutations["Sheepish"] = {parents = {"Porcine", "Shulking"}, mod = "MagicBees"}
-    
+
     -- ExtraBees (https://github.com/ForestryMC/Binnie/blob/master-MC1.12/extrabees/src/main/java/binnie/extrabees/genetics/ExtraBeeDefinition.java)
     mutations["Lustered"] = {parents = {"Forest", "Resilient"}, mod = "ExtraBees"}
     mutations["Tarry"] = {parents = {"Distilled", "Fossilised"}, mod = "ExtraBees"}
@@ -375,7 +375,7 @@ local function loadBeeDatabase()
     mutations["Collecting"] = {parents = {"Student", "Common"}, mod = "Career Bees"}
     mutations["Doctor"] = {parents = {"PHD", "Majestic"}, mod = "Career Bees"}
     mutations["Temporal"] = {parents = {"Quantum Charming", "Quantum Strange"}, mod = "Career Bees"}
-    
+
     -- MeatballCraft Custom Bees (https://github.com/sainagh/meatballcraft/blob/main/config/gendustry/meatball_bees.cfg)
     mutations["Baguette"] = {parents = {"Thief", "Pupil"}, mod = "MeatballCraft"}
     mutations["RestlessClam"] = {parents = {"White", "Shocking"}, mod = "MeatballCraft"}
@@ -418,7 +418,7 @@ local function loadBeeDatabase()
     mutations["Serenading"] = {parents = {"Arcane", "Radiant"}, mod = "MeatballCraft"}
     mutations["ChaosStrikez"] = {parents = {"Energetic", "Savant"}, mod = "MeatballCraft"}
     mutations["UselessForce"] = {parents = {"Red", "Fiendish"}, mod = "MeatballCraft"}
-    
+
     return mutations
 end
 
@@ -436,8 +436,8 @@ local config = {
 
     -- Status indicators
     use_status_lamp = true,           -- Enable colored lamp status indicator
-    use_chat_notifications = true,    -- Enable chat box notifications
-    chat_player_name = nil,           -- Player name for chat messages (nil for broadcast)
+    use_chat_notifications = true,    -- Enable Notification Interface notifications
+    chat_player_name = nil,           -- Player name for notifications (not used with Notification Interface)
 
     -- Machine positions (sides relative to computer/robot)
     mutatron_side = sides.front,      -- Advanced Mutatron location
@@ -445,7 +445,7 @@ local config = {
     input_chest_side = sides.left,    -- Princess/drone input chest
     output_chest_side = sides.down,   -- Product output chest
     mech_user_inventory_side = sides.right, -- Mechanical User's inventory (same as redstone side)
-    
+
     -- Slot configurations
     mutatron_input_slots = {1, 2},    -- Princess, drone slots in mutatron
     mutatron_output_slot = 3,         -- Queen output slot
@@ -464,7 +464,7 @@ local function generateBeeList(modlist)
             table.insert(bees, species)
         end
     end
-    
+
     -- Sort alphabetically for easier browsing
     table.sort(bees)
     return bees
@@ -503,7 +503,7 @@ function setupDisplay()
 
     print("=== HiveMind: Bee Breeding Automation ===")
     print()
-    
+
     -- Set initial status
     updateStatusIndicators("idle", "System started - Ready for commands")
 end
@@ -513,25 +513,25 @@ function scanInventory()
     print("Scanning inventories for bees...")
     inventory.princesses = {}
     inventory.drones = {}
-    
+
     local total_inventories = 0
-    
+
     -- Priority scan: Input and output chests first
     local priority_sides = {
         {side = config.input_chest_side, name = "input chest"},
         {side = config.output_chest_side, name = "output chest"}
     }
-    
+
     for _, priority in ipairs(priority_sides) do
         local side = priority.side
         local name = priority.name
         local inv_size = inv_controller.getInventorySize(side)
-        
+
         -- TODO: refactor to avoid code duplication
         if inv_size then
             total_inventories = total_inventories + 1
             print("Scanning " .. name .. " (" .. inv_size .. " slots)")
-            
+
             for slot = 1, inv_size do
                 local stack = inv_controller.getStackInSlot(side, slot)
                 if stack then
@@ -553,10 +553,10 @@ function scanInventory()
             end
         end
     end
-    
+
     -- Check all other adjacent inventories (10+ slots)
     local all_sides = {sides.up, sides.down, sides.north, sides.south, sides.east, sides.west}
-    
+
     for _, side in ipairs(all_sides) do
         -- Skip if this is already scanned as input/output chest
         local skip = false
@@ -566,14 +566,14 @@ function scanInventory()
                 break
             end
         end
-        
+
         if not skip then
             local inv_size = inv_controller.getInventorySize(side)
-            
+
             if inv_size and inv_size >= 10 then
                 total_inventories = total_inventories + 1
                 print("Found inventory on " .. getSideName(side) .. " side with " .. inv_size .. " slots")
-                
+
                 -- Scan this inventory
                 for slot = 1, inv_size do
                     local stack = inv_controller.getStackInSlot(side, slot)
@@ -595,7 +595,7 @@ function scanInventory()
             end
         end
     end
-    
+
     if total_inventories == 0 then
         print("No inventories found!")
         print("Make sure input/output chests and storage are properly connected.")
@@ -611,7 +611,7 @@ end
 function getSideName(side)
     local side_names = {
         [sides.up] = "top",
-        [sides.down] = "bottom", 
+        [sides.down] = "bottom",
         [sides.north] = "north",
         [sides.south] = "south",
         [sides.east] = "east",
@@ -633,7 +633,7 @@ end
 -- New tree-based breeding path calculation
 function calculateBreedingPath(target)
     print("Calculating breeding strategy for " .. target .. "...")
-    
+
     -- Check if we already have the target
     if hasSpecies(target) then
         return {
@@ -644,35 +644,35 @@ function calculateBreedingPath(target)
             target = target
         }
     end
-    
+
     -- Build the breeding tree
     local tree = buildBreedingTree(target)
     if not tree then
         print("ERROR: Cannot find path to " .. target)
         return nil
     end
-    
+
     -- Clean the tree (remove duplicate drone requirements)
     cleanBreedingTree(tree)
-    
+
     -- Extract drone requirements and calculate steps
     local drone_requirements = calculateDroneRequirements(tree)
     local total_steps = countTreeSteps(tree)
-    
+
     -- Calculate base species requirements (this gives us the actual starting princesses needed)
     local missing_princesses, missing_drones = calculateMissingBaseSpecies(tree, drone_requirements)
-    
+
     -- The starting princesses are just the base species that we need as princesses
     local starting_princesses = {}
     local base_princesses_needed = {}
     local base_drones_needed = {}
-    
+
     findBaseSpeciesNeeded(tree, base_princesses_needed, base_drones_needed)
-    
+
     for species, count in pairs(base_princesses_needed) do
         table.insert(starting_princesses, species)
     end
-    
+
     -- Check if plan can be executed (no missing base species)
     local can_execute = true
     for _, _ in pairs(missing_princesses) do
@@ -685,10 +685,10 @@ function calculateBreedingPath(target)
             break
         end
     end
-    
+
     -- Perform sanity checks on the optimized tree
     local sanity_results = performTreeSanityChecks(tree, target)
-    
+
     -- Handle critical errors (plan is invalid)
     if sanity_results.has_errors then
         print("❌ CRITICAL ERRORS detected in breeding plan:")
@@ -713,7 +713,7 @@ function calculateBreedingPath(target)
             sanity_issues = sanity_results.warnings
         }
     end
-    
+
     -- Handle warnings (plan is valid but suboptimal)
     if sanity_results.has_warnings then
         print("⚠️  Optimization warnings:")
@@ -722,7 +722,8 @@ function calculateBreedingPath(target)
             if warning.type == "missed_reuse" then
                 for species, details in pairs(warning.details) do
                     if details.potential_additional_reuse then
-                        print("    " .. species .. ": " .. details.occurrences .. " occurrences, " .. details.reused .. " reused, could reuse " .. details.potential_additional_reuse .. " more")
+                        local reused_count = details.reused or 0
+                        print("    " .. species .. ": " .. details.occurrences .. " occurrences, " .. reused_count .. " reused, could reuse " .. details.potential_additional_reuse .. " more")
                     else
                         print("    " .. species .. ": " .. details.occurrences .. " occurrences, no reuse")
                     end
@@ -730,7 +731,7 @@ function calculateBreedingPath(target)
             end
         end
     end
-    
+
     return {
         tree = tree,
         starting_princesses = starting_princesses,
@@ -757,11 +758,11 @@ function buildBreedingTree(species)
             drone_count = 0
         }
     end
-    
+
     local parents = mutations[species].parents
     local left_parent = parents[1]  -- Princess parent (golden path)
     local right_parent = parents[2] -- Drone parent
-    
+
     local tree = {
         species = species,
         left_parent = nil,
@@ -770,44 +771,843 @@ function buildBreedingTree(species)
         need_drone = not hasSpeciesDrone(species),
         drone_count = 0
     }
-    
+
     -- ALWAYS build complete tree - build both parent branches
     tree.left_parent = buildBreedingTree(left_parent)
     tree.right_parent = buildBreedingTree(right_parent)
-    
+
     return tree
 end
 
 -- Clean breeding tree using breadth-first stock optimization + climbing optimization
 function cleanBreedingTree(tree)
     if not tree then return end
-    
+
     -- Step 1: Complete tree is already built by buildBreedingTree
-    
+
     -- Step 2: Breadth-first stock optimization - remove sub-trees for species we have in stock
     optimizeTreeByStock(tree)
-    
+
     -- Step 3: Pre-exploration to analyze species occurrences and complexities
     local species_info = {}
     preExploreTree(tree, species_info)
-    
+
     -- Step 4: Climbing optimization for drone accumulation with smart branch selection
     local accumulated_drones = {}
     climbingOptimizeForAccumulation(tree, accumulated_drones, species_info, nil)
-    
-    -- Step 5: Second optimization pass - smarter reuse based on princess vs drone analysis
-    smarterReuseOptimization(tree, species_info)
+
+    -- Step 5: Smart starting-node-based reuse optimization (prevents circular dependencies)
+    strategicReuseOptimization(tree, species_info)
+
+    -- Step 6: Ensure that for every required dependency species, at least one breeding-capable node exists
+    -- Only perform repair if the current plan cannot execute according to our dry-run simulator.
+    if not simulateExecutionFeasibleForPlan or not simulateExecutionFeasibleForPlan(tree) then
+        ensureBreedingSourcesForDependencies(tree)
+    end
+
+    -- Note: We intentionally skip a final global reuse pass here. A late global pass can
+    -- re-trigger dependency restorations and inflate steps. Local sibling reuse (e.g.,
+    -- Platinum/Invar/Nickel) is already handled inside strategicReuseOptimization safely.
+    -- However, to stabilize immediate sibling cases post-restore, enforce a single local pass.
+    local function _findInSubtree(subtree, species)
+        local found = nil
+        local function dfs(n)
+            if not n or found then return end
+            if n.species == species and not n.reusing_drone then
+                found = n
+                return
+            end
+            dfs(n.left_parent)
+            dfs(n.right_parent)
+        end
+        dfs(subtree)
+        return found
+    end
+    local function _convertToReuse(n)
+        n.reusing_drone = true
+        n.left_parent = nil
+        n.right_parent = nil
+    end
+    local function _enforceLocalSiblingReuse(n, root)
+        if not n then return end
+        local L, R = n.left_parent, n.right_parent
+        if L and R and not (L.reusing_drone or R.reusing_drone) then
+            local prefer_L = dependsOnSpecies(R, L.species)
+            local prefer_R = dependsOnSpecies(L, R.species)
+            -- Base-species rule override: keep base as breeder (except Monastic), reuse non-base
+            local function is_base(spec)
+                return mutations[spec] == nil
+            end
+            local function is_monastic(spec)
+                return spec == "Monastic"
+            end
+            local L_base, R_base = is_base(L.species), is_base(R.species)
+            if L_base ~= R_base then
+                if L_base and not is_monastic(L.species) then
+                    prefer_L, prefer_R = false, true
+                elseif R_base and not is_monastic(R.species) then
+                    prefer_L, prefer_R = true, false
+                end
+            end
+            if prefer_L then
+                local alt = _findInSubtree(R, L.species)
+                if alt and alt ~= L and canSafelyConvertToReuse(L, alt, root, L.species, true) then
+                    _convertToReuse(L)
+                end
+            elseif prefer_R then
+                local alt = _findInSubtree(L, R.species)
+                if alt and alt ~= R and canSafelyConvertToReuse(R, alt, root, R.species, true) then
+                    _convertToReuse(R)
+                end
+            end
+        end
+        _enforceLocalSiblingReuse(L, root)
+        _enforceLocalSiblingReuse(R, root)
+    end
+    _enforceLocalSiblingReuse(tree, tree)
+end
+
+-- Strategic reuse optimization using starting-node approach to prevent circular dependencies
+-- Strategic reuse optimization using depth-based selective un-reusing
+function strategicReuseOptimization(tree, species_info)
+    if not tree then return end
+
+    -- Convert a node to reuse (clear parents)
+    local function convertToReuse(node)
+        node.reusing_drone = true
+        node.left_parent = nil
+        node.right_parent = nil
+    end
+
+    -- Traverse top-down and, per parent, convert at most one child to reuse (prefer higher cost)
+    local function optimizeAtNode(node, primary_nodes, species_counts)
+        if not node then return false end
+
+        local changed = false
+
+        local L = node.left_parent
+        local R = node.right_parent
+        if L and R then
+            -- Per-decision memoized cost function to reflect current tree state accurately
+            local memo = {}
+            local function cost(n)
+                if not n then return 0 end
+                local v = memo[n]
+                if v ~= nil then return v end
+                local c = countTreeSteps(n)
+                memo[n] = c
+                return c
+            end
+            -- Helper: find species node in a subtree
+            local function findInSubtree(subtree, species)
+                local found = nil
+                local function dfs(n)
+                    if not n or found then return end
+                    if n.species == species and not n.reusing_drone then
+                        found = n
+                        return
+                    end
+                    dfs(n.left_parent)
+                    dfs(n.right_parent)
+                end
+                dfs(subtree)
+                return found
+            end
+
+            -- Simple dependency-aware preference: if a child species appears in the sibling subtree,
+            -- prefer reusing that child and keep the sibling as the breeder.
+            local prefer_reuse_L = dependsOnSpecies(R, L.species)
+            local prefer_reuse_R = dependsOnSpecies(L, R.species)
+
+            -- Base-species rule: if one side is a base species (no mutation) and the other is not,
+            -- prefer reusing the non-base side (keep base species as breeder), except for Monastic
+            -- which we treat as non-preferred for princess. This overrides the sibling-subtree hint.
+            local function is_base(spec)
+                return mutations[spec] == nil
+            end
+            local function is_monastic(spec)
+                return spec == "Monastic"
+            end
+            if L and R then
+                local L_base = is_base(L.species)
+                local R_base = is_base(R.species)
+                if L_base ~= R_base then
+                    if L_base and not is_monastic(L.species) then
+                        -- Left is base, prefer reusing right (non-base)
+                        prefer_reuse_L = false
+                        prefer_reuse_R = true
+                    elseif R_base and not is_monastic(R.species) then
+                        -- Right is base, prefer reusing left (non-base)
+                        prefer_reuse_L = true
+                        prefer_reuse_R = false
+                    end
+                end
+            end
+
+            local L_primary = primary_nodes[L.species]
+            local R_primary = primary_nodes[R.species]
+            local L_local_override = false
+            local R_local_override = false
+
+            if prefer_reuse_L and R then
+                local alt = findInSubtree(R, L.species)
+                if alt and alt ~= L then
+                    L_primary = alt
+                    L_local_override = true -- allow local sibling-based reuse even if primary is deeper
+                end
+            end
+            if prefer_reuse_R and L then
+                local alt = findInSubtree(L, R.species)
+                if alt and alt ~= R then
+                    R_primary = alt
+                    R_local_override = true -- allow local sibling-based reuse even if primary is deeper
+                end
+            end
+
+            local L_ok = L_primary and L_primary ~= L and canSafelyConvertToReuse(L, L_primary, tree, L.species, L_local_override)
+            local R_ok = R_primary and R_primary ~= R and canSafelyConvertToReuse(R, R_primary, tree, R.species, R_local_override)
+
+            if L_ok and R_ok then
+                -- Choose to reuse the costlier branch and keep the cheaper one
+                local lc = cost(L)
+                local rc = cost(R)
+                -- Tiebreakers:
+                -- 1) Honor dependency preference when set
+                -- 2) Prefer reusing higher-cost subtree
+                -- 3) If perfectly tied, prefer reusing the side whose species occurs more in the tree (more consolidation)
+                -- 4) If still tied, prefer the side that has a local sibling-subtree overlap
+                if prefer_reuse_L and not prefer_reuse_R then
+                    convertToReuse(L)
+                    changed = true
+                elseif prefer_reuse_R and not prefer_reuse_L then
+                    convertToReuse(R)
+                    changed = true
+                elseif lc > rc then
+                    convertToReuse(L)
+                    changed = true
+                elseif rc > lc then
+                    convertToReuse(R)
+                    changed = true
+                else
+                    -- Perfect tie: apply generic consolidation heuristic
+                    local occL = (species_counts and species_counts[L.species]) or 0
+                    local occR = (species_counts and species_counts[R.species]) or 0
+                    if occL > occR then
+                        convertToReuse(L)
+                        changed = true
+                    elseif occR > occL then
+                        convertToReuse(R)
+                        changed = true
+                    else
+                        -- Still tied: prefer the one with sibling-subtree overlap
+                        local overlapL = dependsOnSpecies(R, L.species)
+                        local overlapR = dependsOnSpecies(L, R.species)
+                        if overlapL and not overlapR then
+                            convertToReuse(L)
+                            changed = true
+                        elseif overlapR and not overlapL then
+                            convertToReuse(R)
+                            changed = true
+                        else
+                            -- Fall back to left by convention
+                            convertToReuse(L)
+                            changed = true
+                        end
+                    end
+                end
+            elseif L_ok and not R_ok then
+                convertToReuse(L)
+                changed = true
+            elseif R_ok and not L_ok then
+                convertToReuse(R)
+                changed = true
+            end
+        end
+
+        -- Recurse to children that remain
+        local cl = optimizeAtNode(node.left_parent, primary_nodes, species_counts)
+        local cr = optimizeAtNode(node.right_parent, primary_nodes, species_counts)
+        return changed or cl or cr
+    end
+
+    -- Run multiple passes: recompute species_info and primary nodes each pass to unlock more safe reuses
+    local max_passes = 4
+    local final_primary_nodes = nil
+    for _ = 1, max_passes do
+        -- Recompute species_info based on current tree
+        local pass_info = {}
+        preExploreTree(tree, pass_info, 0)
+
+        -- Choose one primary (breeding) node per species with duplicates (using refreshed metrics)
+        local primary_nodes = {}
+        for sp, info in pairs(pass_info) do
+            local nodes = info.nodes or {}
+            if #nodes > 1 then
+                -- Pick the SHALLOWEST instance by distance from root so deeper ones can safely reuse it.
+                -- Tie-breakers: lower subtree cost, then lower original depth
+                local best, best_depth, best_cost, best_orig_depth = nil, math.huge, math.huge, math.huge
+                for _, n in ipairs(nodes) do
+                    if not n.reusing_drone then
+                        local d = n._distance_from_root or 0
+                        local c = countTreeSteps(n)
+                        local od = n._original_depth or 0
+                        if (d < best_depth) or (d == best_depth and c < best_cost) or (d == best_depth and c == best_cost and od < best_orig_depth) then
+                            best = n
+                            best_depth = d
+                            best_cost = c
+                            best_orig_depth = od
+                        end
+                    end
+                end
+                if best then
+                    best.is_primary_breeding_node = true
+                    primary_nodes[sp] = best
+                end
+            end
+        end
+
+        -- Build species occurrence counts for this pass
+        local species_counts = {}
+        for sp, info in pairs(pass_info) do
+            species_counts[sp] = info.occurrences or 0
+        end
+
+        final_primary_nodes = primary_nodes
+        local any_changed = optimizeAtNode(tree, primary_nodes, species_counts)
+        if not any_changed then break end
+    end
+
+    -- Greedy candidate-based reuse: consider remaining duplicates and apply safe reuses by savings
+    local function hasAnotherBreedingSourceForSpecies(root, species, exclude)
+        local found = false
+        local function dfs(n)
+            if not n or found then return end
+            if n ~= exclude and n.species == species and (n.left_parent or n.right_parent) and not n.reusing_drone then
+                found = true
+                return
+            end
+            dfs(n.left_parent)
+            dfs(n.right_parent)
+        end
+        dfs(root)
+        return found
+    end
+
+    local function findLocalSource(node, root)
+        if not node or not node._parent_ref then return nil, false end
+        local parent = node._parent_ref
+        local sibling = (parent.left_parent == node) and parent.right_parent or parent.left_parent
+        if sibling then
+            -- If sibling subtree contains this species, prefer that as local source
+            if dependsOnSpecies(sibling, node.species) then
+                -- Find a concrete node in sibling subtree
+                local function findInSubtree(subtree, species)
+                    local found = nil
+                    local function dfs(n)
+                        if not n or found then return end
+                        if n.species == species and not n.reusing_drone then
+                            found = n
+                            return
+                        end
+                        dfs(n.left_parent)
+                        dfs(n.right_parent)
+                    end
+                    dfs(subtree)
+                    return found
+                end
+                local alt = findInSubtree(sibling, node.species)
+                if alt and alt ~= node then
+                    return alt, true
+                end
+            end
+        end
+        return nil, false
+    end
+
+    -- Augment tree with parent refs for local lookups
+    local function attachParents(n, parent)
+        if not n then return end
+        n._parent_ref = parent
+        attachParents(n.left_parent, n)
+        attachParents(n.right_parent, n)
+    end
+    attachParents(tree, nil)
+
+    -- Build candidate list (non-primary duplicates)
+    local info = {}
+    preExploreTree(tree, info, 0)
+    local candidates = {}
+    -- Build occurrence counts for tie-breakers (consolidation heuristic)
+    local species_counts_global = {}
+    for sp, data in pairs(info) do
+        species_counts_global[sp] = data.occurrences or 0
+    end
+    local primaries = final_primary_nodes or {}
+    for sp, data in pairs(info) do
+        if #data.nodes > 1 then
+            local primary = primaries[sp]
+            for _, n in ipairs(data.nodes) do
+                if n ~= primary and not n.reusing_drone then
+                    local savings = countTreeSteps(n)
+                    local local_src, allow_rev = findLocalSource(n, tree)
+                    table.insert(candidates, {node=n, species=sp, savings=savings, source=(local_src or primary), allow_reverse=allow_rev})
+                end
+            end
+        end
+    end
+    table.sort(candidates, function(a,b)
+        if a.savings ~= b.savings then return a.savings > b.savings end
+        local occa = species_counts_global[a.species] or 0
+        local occb = species_counts_global[b.species] or 0
+        if occa ~= occb then return occa > occb end
+        if a.allow_reverse ~= b.allow_reverse then return a.allow_reverse and not b.allow_reverse end
+        local da = (a.node._distance_from_root or 0)
+        local db = (b.node._distance_from_root or 0)
+        return da < db
+    end)
+
+    -- Dry-run execution simulator to validate candidate safety beyond local checks
+    function simulateExecutionFeasible(root)
+        if not root then return true end
+        local simulated_bred = {}
+        local visiting = {}
+        local function findBreedableNode(r, species)
+            local found = nil
+            local function dfs(node)
+                if not node or found then return end
+                if node.species == species and (node.left_parent or node.right_parent) and not node.reusing_drone then
+                    found = node
+                    return
+                end
+                dfs(node.left_parent)
+                dfs(node.right_parent)
+            end
+            dfs(r)
+            return found
+        end
+
+        local function simulateEnsure(spec)
+            if simulated_bred[spec] then return true end
+            -- Treat base species as available in simulation
+            if not mutations[spec] then return true end
+            if visiting[spec] then return false end
+            visiting[spec] = true
+            local dep = findBreedableNode(root, spec)
+            local ok = false
+            if dep then
+                ok = simulateSingle(dep)
+            end
+            visiting[spec] = nil
+            return ok or simulated_bred[spec] or (not mutations[spec])
+        end
+
+        function simulateSingle(node)
+            if not node or simulated_bred[node.species] then return true end
+            if node.reusing_drone and not node.is_primary_breeding_node then
+                return true
+            end
+            local m = mutations[node.species]
+            if not m then
+                simulated_bred[node.species] = true
+                return true
+            end
+            local parents = m.parents
+            local princess_parent = parents[1]
+            local drone_parent = parents[2]
+            if not simulateEnsure(princess_parent) then return false end
+            if not simulateEnsure(drone_parent) then return false end
+            simulated_bred[node.species] = true
+            return true
+        end
+
+        -- Collect breeding nodes as in executeBreedingTree (read-only)
+        local all_breeding_nodes = {}
+        local function collect(node)
+            if not node then return end
+            local should_collect = (node.left_parent or node.right_parent) and
+                                  (not node.reusing_drone or node.is_primary_breeding_node)
+            if should_collect then
+                table.insert(all_breeding_nodes, node)
+            end
+            collect(node.left_parent)
+            collect(node.right_parent)
+        end
+        collect(root)
+
+        -- Locally select one primary per species without mutating nodes
+        local species_found = {}
+        for _, node in ipairs(all_breeding_nodes) do
+            local list = species_found[node.species]
+            if not list then list = {}; species_found[node.species] = list end
+            table.insert(list, node)
+        end
+        local primary_breeding_nodes = {}
+        local species_to_primary = {}
+        for sp, instances in pairs(species_found) do
+            -- Pick shallowest; tie-break by lower subtree cost, then original depth
+            local best, best_depth, best_cost, best_orig = nil, math.huge, math.huge, math.huge
+            for _, inst in ipairs(instances) do
+                local d = inst._distance_from_root or 0
+                local c = countTreeSteps(inst)
+                local od = inst._original_depth or 0
+                if (d < best_depth) or (d == best_depth and c < best_cost) or (d == best_depth and c == best_cost and od < best_orig) then
+                    best, best_depth, best_cost, best_orig = inst, d, c, od
+                end
+            end
+            table.insert(primary_breeding_nodes, best)
+            species_to_primary[sp] = best
+        end
+
+        -- Local topological sort that uses our locally selected primaries (no flags)
+        local function localTopoSort(primaries)
+            local sorted, visited, visiting = {}, {}, {}
+            local function visit(node)
+                if visiting[node] or visited[node] then return end
+                visiting[node] = true
+                if node.left_parent then
+                    local dep = species_to_primary[node.left_parent.species]
+                    if dep then visit(dep) end
+                end
+                if node.right_parent then
+                    local dep = species_to_primary[node.right_parent.species]
+                    if dep then visit(dep) end
+                end
+                visiting[node] = nil
+                visited[node] = true
+                table.insert(sorted, node)
+            end
+            for _, n in ipairs(primaries) do visit(n) end
+            return sorted
+        end
+
+        local sorted_primary_nodes = localTopoSort(primary_breeding_nodes)
+        for _, node in ipairs(sorted_primary_nodes) do
+            if not simulateSingle(node) then return false end
+        end
+
+        -- Post-order for remaining nodes
+        local function post(node)
+            if not node then return true end
+            if node.left_parent and not post(node.left_parent) then return false end
+            if node.right_parent and not post(node.right_parent) then return false end
+            if (node.left_parent or node.right_parent) and not node.reusing_drone and
+               not node.is_primary_breeding_node and not simulated_bred[node.species] then
+                if not simulateSingle(node) then return false end
+            end
+            return true
+        end
+        return post(root)
+    end
+
+    -- Helper to deep-copy a tree minimally for reuse search
+    local function cloneNode(n, parent_map)
+        if not n then return nil end
+        if parent_map[n] then return parent_map[n] end
+        local c = {
+            species = n.species,
+            reusing_drone = n.reusing_drone,
+            is_primary_breeding_node = n.is_primary_breeding_node,
+            need_princess = n.need_princess,
+            need_drone = n.need_drone,
+            drone_count = n.drone_count,
+            _distance_from_root = n._distance_from_root,
+            _original_depth = n._original_depth,
+        }
+        parent_map[n] = c
+        c.left_parent = cloneNode(n.left_parent, parent_map)
+        c.right_parent = cloneNode(n.right_parent, parent_map)
+        return c
+    end
+
+    local function cloneTree(root)
+        return cloneNode(root, {})
+    end
+
+    -- Optional beam search over reuse combinations (disabled by default)
+    local enable_beam_search = config and config.enable_beam_search
+    if enable_beam_search then
+        local beam_width = config.beam_width or 6
+        local max_expansions = math.min(config.max_beam_expansions or 24, #candidates)
+        local frontier = { tree }
+        local best_tree = tree
+        local best_steps = countTreeSteps(tree)
+
+        local expansions = 0
+        while expansions < max_expansions and #frontier > 0 do
+            -- Expand each tree in the frontier by trying next viable candidates specific to that snapshot
+            local next_frontier = {}
+            for _, snapshot in ipairs(frontier) do
+            -- Rebuild parent refs for this snapshot
+            local function attachParentsSnap(n, parent)
+                if not n then return end
+                n._parent_ref = parent
+                attachParentsSnap(n.left_parent, n)
+                attachParentsSnap(n.right_parent, n)
+            end
+            attachParentsSnap(snapshot, nil)
+
+            -- Recompute candidates on this snapshot (using same logic)
+            local snapshot_info = {}
+            preExploreTree(snapshot, snapshot_info, 0)
+            local snapshot_primaries = {}
+            for sp, info2 in pairs(snapshot_info) do
+                local nodes2 = info2.nodes or {}
+                if #nodes2 > 1 then
+                    local best, bd, bc, bod = nil, math.huge, math.huge, math.huge
+                    for _, n2 in ipairs(nodes2) do
+                        if not n2.reusing_drone then
+                            local d2 = n2._distance_from_root or 0
+                            local c2 = countTreeSteps(n2)
+                            local od2 = n2._original_depth or 0
+                            if (d2 < bd) or (d2 == bd and c2 < bc) or (d2 == bd and c2 == bc and od2 < bod) then
+                                best, bd, bc, bod = n2, d2, c2, od2
+                            end
+                        end
+                    end
+                    if best then
+                        best.is_primary_breeding_node = true
+                        snapshot_primaries[sp] = best
+                    end
+                end
+            end
+
+            local snap_candidates = {}
+            for sp, data2 in pairs(snapshot_info) do
+                if #data2.nodes > 1 then
+                    local primary = snapshot_primaries[sp]
+                    for _, n2 in ipairs(data2.nodes) do
+                        if n2 ~= primary and not n2.reusing_drone then
+                            local save2 = countTreeSteps(n2)
+                            local local_src2, allow_rev2 = findLocalSource(n2, snapshot)
+                            table.insert(snap_candidates, {node=n2, species=sp, savings=save2, source=(local_src2 or primary), allow_reverse=allow_rev2})
+                        end
+                    end
+                end
+            end
+            -- Occurrence-aware sort in beam snapshots as well
+            local counts_snap = {}
+            for sp, data2 in pairs(snapshot_info) do
+                counts_snap[sp] = data2.occurrences or 0
+            end
+            table.sort(snap_candidates, function(a,b)
+                if a.savings ~= b.savings then return a.savings > b.savings end
+                local occa = counts_snap[a.species] or 0
+                local occb = counts_snap[b.species] or 0
+                if occa ~= occb then return occa > occb end
+                if a.allow_reverse ~= b.allow_reverse then return a.allow_reverse and not b.allow_reverse end
+                local da = (a.node._distance_from_root or 0)
+                local db = (b.node._distance_from_root or 0)
+                return da < db
+            end)
+
+            -- Try up to beam_width best candidates for this snapshot
+            local trials = 0
+            for _, cand in ipairs(snap_candidates) do
+                if trials >= beam_width then break end
+                local n2 = cand.node
+                local src2 = cand.source
+                if n2 and src2 and src2 ~= n2 and not n2.reusing_drone then
+                    if hasAnotherBreedingSourceForSpecies(snapshot, cand.species, n2) and not wouldCreateBothChildrenReused(n2, snapshot) then
+                        if canSafelyConvertToReuse(n2, src2, snapshot, cand.species, cand.allow_reverse) then
+                            -- Clone, apply candidate, simulate
+                            local cloned = cloneTree(snapshot)
+                            -- Map back from original node to cloned node by path: re-find by species/depth heuristics
+                            local function findCloneByPath(rootA, rootB, target)
+                                if rootA == target then return rootB end
+                                local res = nil
+                                if rootA.left_parent and rootB.left_parent then
+                                    res = findCloneByPath(rootA.left_parent, rootB.left_parent, target)
+                                    if res then return res end
+                                end
+                                if rootA.right_parent and rootB.right_parent then
+                                    res = findCloneByPath(rootA.right_parent, rootB.right_parent, target)
+                                    if res then return res end
+                                end
+                                return nil
+                            end
+                            local cloned_n = findCloneByPath(snapshot, cloned, n2)
+                            if cloned_n then
+                                cloned_n.reusing_drone = true
+                                cloned_n.left_parent = nil
+                                cloned_n.right_parent = nil
+                                if simulateExecutionFeasible(cloned) then
+                                    table.insert(next_frontier, cloned)
+                                    trials = trials + 1
+                                    local steps_now = countTreeSteps(cloned)
+                                    if steps_now < best_steps then
+                                        best_steps = steps_now
+                                        best_tree = cloned
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end -- end for cand in snap_candidates
+            end -- end for snapshot in frontier
+            -- Prepare next layer of the beam
+            table.sort(next_frontier, function(a,b)
+                return countTreeSteps(a) < countTreeSteps(b)
+            end)
+            if #next_frontier > beam_width then
+                local trimmed = {}
+                for i=1, beam_width do trimmed[i] = next_frontier[i] end
+                next_frontier = trimmed
+            end
+            frontier = next_frontier
+            expansions = expansions + 1
+        end
+
+        -- If we found a better tree, copy it back into the original tree (in place)
+        if best_tree ~= tree then
+            -- Replace fields of tree with best_tree
+            local function overwrite(dst, src)
+                dst.species = src.species
+                dst.reusing_drone = src.reusing_drone
+                dst.is_primary_breeding_node = src.is_primary_breeding_node
+                dst.need_princess = src.need_princess
+                dst.need_drone = src.need_drone
+                dst.drone_count = src.drone_count
+                dst._distance_from_root = src._distance_from_root
+                dst._original_depth = src._original_depth
+                if src.left_parent then
+                    if not dst.left_parent then dst.left_parent = {} end
+                    overwrite(dst.left_parent, src.left_parent)
+                else
+                    dst.left_parent = nil
+                end
+                if src.right_parent then
+                    if not dst.right_parent then dst.right_parent = {} end
+                    overwrite(dst.right_parent, src.right_parent)
+                else
+                    dst.right_parent = nil
+                end
+            end
+            overwrite(tree, best_tree)
+        end
+    end
+end
+
+-- Global wrapper for plan executability simulation used by cleanBreedingTree gating
+function simulateExecutionFeasibleForPlan(tree)
+    if simulateExecutionFeasible then
+        return simulateExecutionFeasible(tree)
+    end
+    -- If simulator is unavailable, be conservative and report infeasible so repairs run
+    return false
+end
+
+-- (Removed duplicate getNodeDepth; use getNodeDepth below which returns distance from root)
+
+-- Check if converting an instance to reuse is safe
+function canSafelyConvertToReuse(instance, starting_node, root_tree, species, allow_reverse_order)
+    if instance.reusing_drone then return false end
+
+    -- Safety check: ensure this instance isn't required by the starting node's breeding path
+    if isInBreedingPath(instance, starting_node) then
+        return false
+    end
+
+    -- CRITICAL SAFETY: Check if converting this instance would create a parent with both children reused
+    if wouldCreateBothChildrenReused(instance, root_tree) then
+        return false
+    end
+
+    -- Additional safety: check execution order
+    local instance_depth = getNodeDepth(instance, root_tree)
+    local starting_depth = getNodeDepth(starting_node, root_tree)
+
+    -- Default rule: only convert instances that come after the starting node in execution order
+    -- Local sibling-based reuse override: if the reuse source is within the sibling subtree (deeper),
+    -- we allow reverse depth ordering because that subtree will execute first in post-order.
+    if allow_reverse_order then
+        -- Only allow when the source (starting_node) is strictly deeper than the instance,
+        -- which happens in sibling-subtree reuse (e.g., reuse Nickel at Platinum from Invar subtree).
+        return (instance_depth >= 0 and starting_depth > instance_depth)
+    end
+    return instance_depth >= starting_depth
+end
+
+-- Check if a node depends on a specific species in its breeding path
+function dependsOnSpecies(node, species)
+    if not node then return false end
+    if node.species == species then return true end
+
+    return dependsOnSpecies(node.left_parent, species) or dependsOnSpecies(node.right_parent, species)
+end
+
+-- Check if one node is in the breeding path of another
+function isInBreedingPath(potential_dependency, target_node)
+    if not target_node then return false end
+    if potential_dependency == target_node then return true end
+
+    return isInBreedingPath(potential_dependency, target_node.left_parent) or
+           isInBreedingPath(potential_dependency, target_node.right_parent)
+end
+
+-- Check if converting an instance to reuse would create a parent with both children reused
+function wouldCreateBothChildrenReused(instance, root_tree)
+    -- Find all parent nodes that have this instance as a child
+    local parent_nodes = findParentNodes(instance, root_tree)
+
+    for _, parent in ipairs(parent_nodes) do
+        if parent.left_parent and parent.right_parent then
+            local left_would_be_reused = (parent.left_parent == instance) or parent.left_parent.reusing_drone
+            local right_would_be_reused = (parent.right_parent == instance) or parent.right_parent.reusing_drone
+
+            -- If converting this instance would make both children reused, it's unsafe
+            if left_would_be_reused and right_would_be_reused then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+-- Find all parent nodes that have the target as a direct child
+function findParentNodes(target_node, root_tree)
+    local parents = {}
+
+    local function searchForParents(node)
+        if not node then return end
+
+        if node.left_parent == target_node or node.right_parent == target_node then
+            table.insert(parents, node)
+        end
+
+        searchForParents(node.left_parent)
+        searchForParents(node.right_parent)
+    end
+
+    searchForParents(root_tree)
+    return parents
+end
+
+-- Get the depth of a node in the tree (distance from root)
+function getNodeDepth(target_node, root_tree)
+    local function findDepth(current_node, target, depth)
+        if not current_node then return -1 end
+        if current_node == target then return depth end
+
+        local left_depth = findDepth(current_node.left_parent, target, depth + 1)
+        if left_depth >= 0 then return left_depth end
+
+        return findDepth(current_node.right_parent, target, depth + 1)
+    end
+
+    return findDepth(root_tree, target_node, 0)
 end
 
 -- Count how many times each species is needed as a drone in the tree
 function countDroneOccurrences(tree, counts)
     if not tree then return end
-    
+
     -- Count this species if it's needed as a drone
     if tree.need_drone then
         counts[tree.species] = (counts[tree.species] or 0) + 1
     end
-    
+
     -- Recursively count in subtrees
     countDroneOccurrences(tree.left_parent, counts)
     countDroneOccurrences(tree.right_parent, counts)
@@ -816,18 +1616,18 @@ end
 -- Breadth-first stock optimization - remove sub-trees for species we have in stock
 function optimizeTreeByStock(tree)
     if not tree then return end
-    
+
     -- Process tree level by level (breadth-first)
     local current_level = {tree}
-    
+
     while #current_level > 0 do
         local next_level = {}
-        
+
         for _, node in ipairs(current_level) do
             -- Check if we have stock of this species (accounting for breeding needs)
-            local available_princesses = countAvailablePrincesses(node.species) 
+            local available_princesses = countAvailablePrincesses(node.species)
             local available_drones = countAvailableDrones(node.species)
-            
+
             -- If we have stock, we can simplify this node
             if available_princesses > 0 or available_drones > 0 then
                 -- Remove breeding sub-tree but keep as leaf node for breeding
@@ -845,7 +1645,7 @@ function optimizeTreeByStock(tree)
                 end
             end
         end
-        
+
         current_level = next_level
     end
 end
@@ -865,15 +1665,15 @@ end
 function findDeepestNode(tree)
     local deepest = tree
     local max_depth = 0
-    
+
     local function findDepth(node, depth)
         if not node then return end
-        
+
         if depth > max_depth then
             max_depth = depth
             deepest = node
         end
-        
+
         if node.left_parent then
             findDepth(node.left_parent, depth + 1)
         end
@@ -881,7 +1681,7 @@ function findDeepestNode(tree)
             findDepth(node.right_parent, depth + 1)
         end
     end
-    
+
     findDepth(tree, 0)
     return deepest
 end
@@ -891,24 +1691,24 @@ end
 function calculateTreeDepth(tree)
     if not tree then return 0 end
     if not tree.left_parent and not tree.right_parent then return 1 end
-    
+
     local left_depth = calculateTreeDepth(tree.left_parent)
     local right_depth = calculateTreeDepth(tree.right_parent)
-    
+
     return 1 + math.max(left_depth, right_depth)
 end
 
 -- Pre-exploration to find all species and their breeding complexities
 function preExploreTree(tree, species_info, distance_from_root)
     if not tree then return end
-    
+
     distance_from_root = distance_from_root or 0
-    
+
     -- Calculate depth of this subtree and distance from root
     local subtree_depth = calculateTreeDepth(tree)
     tree._original_depth = subtree_depth  -- Store original subtree depth
     tree._distance_from_root = distance_from_root  -- Store distance from root
-    
+
     -- Store or update species info
     if not species_info[tree.species] then
         species_info[tree.species] = {
@@ -922,10 +1722,10 @@ function preExploreTree(tree, species_info, distance_from_root)
         species_info[tree.species].min_subtree_depth = math.min(species_info[tree.species].min_subtree_depth, subtree_depth)
         species_info[tree.species].min_distance_from_root = math.min(species_info[tree.species].min_distance_from_root, distance_from_root)
     end
-    
+
     species_info[tree.species].occurrences = species_info[tree.species].occurrences + 1
     table.insert(species_info[tree.species].nodes, tree)
-    
+
     -- Recursively explore children
     preExploreTree(tree.left_parent, species_info, distance_from_root + 1)
     preExploreTree(tree.right_parent, species_info, distance_from_root + 1)
@@ -934,25 +1734,25 @@ end
 -- Climbing optimization for drone accumulation (with smart branch selection)
 function climbingOptimizeForAccumulation(tree, accumulated_drones, species_info, parent)
     if not tree then return end
-    
+
     if tree.left_parent then
         climbingOptimizeForAccumulation(tree.left_parent, accumulated_drones, species_info, tree)
     end
     if tree.right_parent then
         climbingOptimizeForAccumulation(tree.right_parent, accumulated_drones, species_info, tree)
     end
-    
+
     -- Skip if this node is already marked for reuse
     if tree.reusing_drone then
         return
     end
-    
+
     -- Check if we've already encountered this species and can reuse
     local species_data = species_info[tree.species]
     if species_data and species_data.occurrences > 1 and accumulated_drones[tree.species] and accumulated_drones[tree.species] > 0 then
         local current_distance = tree._distance_from_root or 0
         local min_distance = species_data.min_distance_from_root
-        
+
         if current_distance >= min_distance then
             if parent and parent.left_parent and parent.right_parent then
                 local sibling = parent.left_parent == tree and parent.right_parent or parent.left_parent
@@ -967,7 +1767,7 @@ function climbingOptimizeForAccumulation(tree, accumulated_drones, species_info,
             return
         end
     end
-    
+
     -- If we're breeding this species (has parents), add it to accumulation
     if tree.left_parent or tree.right_parent then
         accumulated_drones[tree.species] = (accumulated_drones[tree.species] or 0) + 1
@@ -977,14 +1777,14 @@ end
 -- Second optimization pass: breadth-first analysis + climbing optimization
 function smarterReuseOptimization(tree, species_info)
     if not tree then return end
-    
+
     -- Step 1: Breadth-first pass to identify nodes with both parents unreused (potential for optimization)
     local optimization_candidates = {}
     identifyOptimizationCandidates(tree, optimization_candidates, 0)
-    
+
     -- Sort candidates by distance from root (process closer to root first)
     table.sort(optimization_candidates, function(a, b) return a.distance < b.distance end)
-    
+
     -- Step 2: Climbing pass - for each candidate, try to reuse one parent without killing ancestors
     for _, candidate in ipairs(optimization_candidates) do
         optimizeNodeParents(candidate.node, tree, species_info)
@@ -994,18 +1794,18 @@ end
 -- Breadth-first identification of nodes that have both parents unreused (optimization candidates)
 function identifyOptimizationCandidates(tree, candidates, distance)
     if not tree then return end
-    
+
     -- Check if this node has both parents unreused (potential for optimization)
     if tree.left_parent and tree.right_parent then
         local left_reused = tree.left_parent.reusing_drone or false
         local right_reused = tree.right_parent.reusing_drone or false
-        
+
         if not left_reused and not right_reused then
             -- This node has both parents unreused - it's a candidate for optimization
             table.insert(candidates, {node = tree, distance = distance})
         end
     end
-    
+
     -- Continue breadth-first traversal
     identifyOptimizationCandidates(tree.left_parent, candidates, distance + 1)
     identifyOptimizationCandidates(tree.right_parent, candidates, distance + 1)
@@ -1016,7 +1816,7 @@ function optimizeNodeParents(node, root_tree, species_info)
     if not node or not node.left_parent or not node.right_parent then
         return
     end
-    
+
     local left_parent = node.left_parent
     local right_parent = node.right_parent
     local left_reused = left_parent.reusing_drone
@@ -1026,14 +1826,14 @@ function optimizeNodeParents(node, root_tree, species_info)
     if left_reused or right_reused then
         return
     end
-    
+
     if canReuseParentSafely(left_parent, root_tree, species_info) then
         left_parent.reusing_drone = true
         left_parent.left_parent = nil
         left_parent.right_parent = nil
         return
     end
-    
+
     if canReuseParentSafely(right_parent, root_tree, species_info) then
         right_parent.reusing_drone = true
         right_parent.left_parent = nil
@@ -1047,21 +1847,21 @@ function canReuseParentSafely(parent, root_tree, species_info)
     if not parent or parent.reusing_drone then
         return false -- Already reused or invalid
     end
-    
+
     -- Check if this parent species is available elsewhere in the tree
     local parent_species = parent.species
     local available_sources = countAvailableSourcesForSpecies(parent_species, root_tree, parent)
-    
+
     -- We need at least one other source for this species (excluding this one)
     if available_sources < 1 then
         return false -- Would kill our only source for this species
     end
-    
+
     -- Check if we have this species in stock
     if hasSpeciesDrone(parent_species) then
         return true -- We have it in stock, safe to reuse
     end
-    
+
     return available_sources > 0 -- Safe if there are other sources
 end
 
@@ -1070,18 +1870,18 @@ function countAvailableSourcesForSpecies(species, tree, exclude_node)
     if not tree or tree == exclude_node then
         return 0
     end
-    
+
     local count = 0
-    
+
     -- If this node produces the species and is not reused, count it
     if tree.species == species and not tree.reusing_drone and (tree.left_parent or tree.right_parent) then
         count = count + 1
     end
-    
+
     -- Recursively count in subtrees
     count = count + countAvailableSourcesForSpecies(species, tree.left_parent, exclude_node)
     count = count + countAvailableSourcesForSpecies(species, tree.right_parent, exclude_node)
-    
+
     return count
 end
 
@@ -1089,18 +1889,18 @@ end
 function findBestProducer(nodes)
     local best = nodes[1]
     local best_distance = best._distance_from_root or 0
-    
+
     for i = 2, #nodes do
         local node = nodes[i]
         local distance = node._distance_from_root or 0
-        
+
         -- Prefer nodes closer to root (lower distance)
         if distance < best_distance then
             best = node
             best_distance = distance
         end
     end
-    
+
     return best
 end
 
@@ -1109,25 +1909,25 @@ function canSafelyReuseNode(node, species, species_info)
     if not node.left_parent or not node.right_parent then
         return true -- Leaf nodes can always be reused safely
     end
-    
+
     -- Check if reusing this node would create a dependency on base species that we can't fulfill
     local required_princesses = {}
     findPrincessRequirementsForNode(node, required_princesses)
-    
+
     -- For each required princess species, check if we have other ways to obtain it
     for req_species, count in pairs(required_princesses) do
         if not canFulfillPrincessRequirement(req_species, count, species_info) then
             return false
         end
     end
-    
+
     return true
 end
 
 -- Find princess requirements that would be lost if we reuse this node
 function findPrincessRequirementsForNode(node, requirements)
     if not node then return end
-    
+
     -- If this is a leaf node that needs a princess, count it
     if not node.left_parent and not node.right_parent then
         if node.need_princess then
@@ -1135,7 +1935,7 @@ function findPrincessRequirementsForNode(node, requirements)
         end
         return
     end
-    
+
     -- Recursively check children
     findPrincessRequirementsForNode(node.left_parent, requirements)
     findPrincessRequirementsForNode(node.right_parent, requirements)
@@ -1147,7 +1947,7 @@ function canFulfillPrincessRequirement(species, count, species_info)
     if hasSpeciesPrincess(species) then
         return true
     end
-    
+
     -- If there are other non-reused occurrences of this species that can produce it, we're good
     local species_data = species_info[species]
     if species_data then
@@ -1157,12 +1957,12 @@ function canFulfillPrincessRequirement(species, count, species_info)
                 available_producers = available_producers + 1
             end
         end
-        
+
         if available_producers >= count then
             return true
         end
     end
-    
+
     return false
 end
 
@@ -1174,37 +1974,103 @@ function treeHasImpossibleParents(species_info)
             if node.left_parent and node.right_parent then
                 local left_reused = node.left_parent.reusing_drone or false
                 local right_reused = node.right_parent.reusing_drone or false
-                
+
                 if left_reused and right_reused then
                     return true -- Found an impossible parent
                 end
             end
         end
     end
-    
+
     return false -- No impossible parents found
 end
 
 -- Validate tree after optimization to ensure no impossible parent-child relationships
 function validateTreeAfterOptimization(tree)
     if not tree then return end
-    
+
     -- Check this node
     if tree.left_parent and tree.right_parent then
         -- If both children exist, at least one must not be reused
         local left_reused = tree.left_parent.reusing_drone or false
         local right_reused = tree.right_parent.reusing_drone or false
-        
+
         if left_reused and right_reused then
             -- CRITICAL ERROR: Both children are reused, this parent cannot be bred
             -- Fix by un-reusing one of the children (prefer the deeper/more complex one)
             fixImpossibleParent(tree)
         end
     end
-    
+
     -- Recursively validate children
     validateTreeAfterOptimization(tree.left_parent)
     validateTreeAfterOptimization(tree.right_parent)
+end
+
+-- Ensure that for every species used as a parent in the tree, there exists at least one
+-- breeding-capable (non-reused) node for that species. If missing, un-reuse a suitable instance.
+function ensureBreedingSourcesForDependencies(root)
+    if not root then return end
+
+    -- Collect all required parent species in the plan
+    local required = {}
+    local function collectRequired(node)
+        if not node then return end
+        if node.left_parent then required[node.left_parent.species] = true end
+        if node.right_parent then required[node.right_parent.species] = true end
+        collectRequired(node.left_parent)
+        collectRequired(node.right_parent)
+    end
+    collectRequired(root)
+
+    -- Map species to nodes and detect breeding-capable availability
+    local species_nodes = {}
+    local has_breeding_capable = {}
+    local function indexNodes(node)
+        if not node then return end
+        species_nodes[node.species] = species_nodes[node.species] or {}
+        table.insert(species_nodes[node.species], node)
+        if (node.left_parent or node.right_parent) and not node.reusing_drone then
+            has_breeding_capable[node.species] = true
+        end
+        indexNodes(node.left_parent)
+        indexNodes(node.right_parent)
+    end
+    indexNodes(root)
+
+    -- For each required species, ensure there is at least one breeding-capable node
+    for species, _ in pairs(required) do
+        if not has_breeding_capable[species] then
+            local candidates = species_nodes[species] or {}
+            local to_restore = nil
+            local best_cost = math.huge
+            -- Prefer the cheapest reused instance to restore, using original depth as cost proxy
+            for _, n in ipairs(candidates) do
+                if n.reusing_drone then
+                    local cost = n._original_depth or math.huge
+                    if cost < best_cost then
+                        best_cost = cost
+                        to_restore = n
+                    end
+                end
+            end
+            -- If none reused (edge case), fall back to primary or first
+            if not to_restore then
+                for _, n in ipairs(candidates) do
+                    if n.is_primary_breeding_node then
+                        to_restore = n
+                        break
+                    end
+                end
+                if not to_restore and #candidates > 0 then
+                    to_restore = candidates[1]
+                end
+            end
+            if to_restore and to_restore.reusing_drone then
+                unreuseNode(to_restore)
+            end
+        end
+    end
 end
 
 -- Fix a parent node that has both children reused (impossible situation)
@@ -1212,14 +2078,14 @@ function fixImpossibleParent(parent)
     if not parent.left_parent or not parent.right_parent then
         return -- Nothing to fix
     end
-    
+
     local left_child = parent.left_parent
     local right_child = parent.right_parent
-    
+
     -- Choose which child to un-reuse (prefer keeping the simpler one reused)
     local left_depth = left_child._original_depth or 0
     local right_depth = right_child._original_depth or 0
-    
+
     if left_depth >= right_depth then
         -- Left is deeper/more complex, un-reuse it and restore its breeding tree
         unreuseNode(left_child)
@@ -1234,19 +2100,19 @@ function unreuseNode(node)
     if not node or not node.reusing_drone then
         return -- Nothing to do
     end
-    
+
     -- Clear the reuse flag
     node.reusing_drone = false
-    
+
     -- Restore the breeding tree (we need to rebuild it)
     if mutations[node.species] then
         local parents = mutations[node.species].parents
         node.left_parent = buildBreedingTree(parents[1])
         node.right_parent = buildBreedingTree(parents[2])
-        
+
         -- Apply optimizations to the restored subtree
         optimizeTreeByStock(node)
-        
+
         -- Re-apply reuse optimizations to the subtree (but avoid the validation loop)
         local species_info = {}
         preExploreTree(node, species_info)
@@ -1258,7 +2124,7 @@ end
 -- Apply the climbing optimization results to the tree
 function applyClimbingOptimization(tree, available_drones)
     if not tree then return end
-    
+
     -- Apply reusing_drone markers that were set during climbing
     applyClimbingOptimization(tree.left_parent, available_drones)
     applyClimbingOptimization(tree.right_parent, available_drones)
@@ -1267,32 +2133,32 @@ end
 -- Find all starting princesses needed for the tree
 function findStartingPrincesses(tree)
     if not tree then return {} end
-    
+
     local princesses = {}
-    
+
     -- If this is a leaf node and we need a princess, it's a starting princess
     if not tree.left_parent and not tree.right_parent and tree.need_princess then
         table.insert(princesses, tree.species)
     end
-    
+
     -- Recursively find starting princesses in subtrees
     local left_princesses = findStartingPrincesses(tree.left_parent)
     local right_princesses = findStartingPrincesses(tree.right_parent)
-    
+
     for _, princess in ipairs(left_princesses) do
         table.insert(princesses, princess)
     end
     for _, princess in ipairs(right_princesses) do
         table.insert(princesses, princess)
     end
-    
+
     return princesses
 end
 
 -- Recursively find all base species needed for a tree node
 function findBaseSpeciesNeeded(tree, base_princesses, base_drones)
     if not tree then return end
-    
+
     -- If this is a base species (no mutation), count it
     if not mutations[tree.species] then
         if tree.need_princess then
@@ -1303,7 +2169,7 @@ function findBaseSpeciesNeeded(tree, base_princesses, base_drones)
         end
         return
     end
-    
+
     -- If this is an intermediate species, recurse to its components
     findBaseSpeciesNeeded(tree.left_parent, base_princesses, base_drones)
     findBaseSpeciesNeeded(tree.right_parent, base_princesses, base_drones)
@@ -1313,10 +2179,10 @@ end
 function calculateMissingBaseSpecies(tree, drone_requirements)
     local base_princesses_needed = {}
     local base_drones_needed = {}
-    
+
     -- Find all base species needed by traversing the complete tree
     findBaseSpeciesNeeded(tree, base_princesses_needed, base_drones_needed)
-    
+
     -- Calculate missing princesses (base species only)
     local missing_princesses = {}
     for species, needed in pairs(base_princesses_needed) do
@@ -1328,19 +2194,19 @@ function calculateMissingBaseSpecies(tree, drone_requirements)
             missing_princesses[species] = needed - available
         end
     end
-    
+
     -- Calculate missing drones (base species only)
     local missing_drones = {}
     for species, needed in pairs(base_drones_needed) do
         local available = 0
         if hasSpeciesDrone(species) then
-            available = 1 -- Simple count - could be enhanced to track actual quantities  
+            available = 1 -- Simple count - could be enhanced to track actual quantities
         end
         if needed > available then
             missing_drones[species] = needed - available
         end
     end
-    
+
     return missing_princesses, missing_drones
 end
 
@@ -1348,28 +2214,28 @@ end
 function detectMissedReuseOpportunities(tree)
     local species_occurrences = {}
     local missed_opportunities = {}
-    
+
     -- Check if a node can be reused based on sibling constraints
     local function canNodeBeReused(node, parent_context)
         if not parent_context or not parent_context.parent then
             return true -- Root or orphaned nodes can be reused
         end
-        
+
         local parent = parent_context.parent
         local sibling = parent_context.side == "left" and parent.right_parent or parent.left_parent
-        
+
         -- If sibling is reused, this node cannot be reused (would create impossible parent)
         if sibling and sibling.reusing_drone then
             return false
         end
-        
+
         return true
     end
-    
+
     -- Count all occurrences of each species in the tree, tracking sibling relationships
     local function countSpeciesOccurrences(node, parent_context)
         if not node then return end
-        
+
         if not species_occurrences[node.species] then
             species_occurrences[node.species] = {
                 total = 0,
@@ -1378,10 +2244,10 @@ function detectMissedReuseOpportunities(tree)
                 reusable_nodes = {}
             }
         end
-        
+
         species_occurrences[node.species].total = species_occurrences[node.species].total + 1
         table.insert(species_occurrences[node.species].nodes, node)
-        
+
         if node.reusing_drone then
             species_occurrences[node.species].reused = species_occurrences[node.species].reused + 1
         else
@@ -1390,19 +2256,19 @@ function detectMissedReuseOpportunities(tree)
                 table.insert(species_occurrences[node.species].reusable_nodes, node)
             end
         end
-        
+
         countSpeciesOccurrences(node.left_parent, {parent = node, side = "left"})
         countSpeciesOccurrences(node.right_parent, {parent = node, side = "right"})
     end
-    
+
     countSpeciesOccurrences(tree, nil)
-    
+
     -- Identify missed opportunities (only for intermediate species, considering sibling constraints)
     for species, data in pairs(species_occurrences) do
         -- Skip base species (species without mutations) - their multiple occurrences are expected
         if mutations[species] then
             local total_reusable = #data.reusable_nodes
-            
+
             if data.total > 1 and data.reused == 0 and total_reusable > 0 then
                 -- Multiple occurrences but no reuse, and some could be reused
                 missed_opportunities[species] = {
@@ -1421,7 +2287,7 @@ function detectMissedReuseOpportunities(tree)
             end
         end
     end
-    
+
     return missed_opportunities
 end
 
@@ -1429,7 +2295,7 @@ end
 function performTreeSanityChecks(tree, target)
     local warnings = {}
     local errors = {}
-    
+
     -- Check for missed reuse opportunities (WARNING - not fatal)
     local missed_reuse = detectMissedReuseOpportunities(tree)
     if next(missed_reuse) then
@@ -1440,21 +2306,21 @@ function performTreeSanityChecks(tree, target)
             message = "Potential missed reuse opportunities detected"
         })
     end
-    
+
     -- Check for reused nodes that still have children (ERROR - fatal)
     local function checkReuseConsistency(node, path)
         if not node then return end
-        
+
         if node.reusing_drone and (node.left_parent or node.right_parent) then
             table.insert(errors, {
                 type = "reuse_inconsistency",
-                severity = "error", 
+                severity = "error",
                 species = node.species,
                 path = path,
                 message = "CRITICAL: Reused node " .. node.species .. " still has breeding children"
             })
         end
-        
+
         if node.left_parent then
             checkReuseConsistency(node.left_parent, path .. "->" .. node.left_parent.species)
         end
@@ -1462,28 +2328,28 @@ function performTreeSanityChecks(tree, target)
             checkReuseConsistency(node.right_parent, path .. "->" .. node.right_parent.species)
         end
     end
-    
+
     checkReuseConsistency(tree, target)
-    
+
     -- Check for impossible parents (ERROR - fatal)
     local function checkImpossibleParents(node, path)
         if not node then return end
-        
+
         if node.left_parent and node.right_parent then
             local left_reused = node.left_parent.reusing_drone or false
             local right_reused = node.right_parent.reusing_drone or false
-            
+
             if left_reused and right_reused then
                 table.insert(errors, {
                     type = "impossible_parent",
                     severity = "error",
-                    species = node.species, 
+                    species = node.species,
                     path = path,
                     message = "CRITICAL: " .. node.species .. " has both children reused (impossible to breed)"
                 })
             end
         end
-        
+
         if node.left_parent then
             checkImpossibleParents(node.left_parent, path .. "->" .. node.left_parent.species)
         end
@@ -1491,9 +2357,9 @@ function performTreeSanityChecks(tree, target)
             checkImpossibleParents(node.right_parent, path .. "->" .. node.right_parent.species)
         end
     end
-    
+
     checkImpossibleParents(tree, target)
-    
+
     return {
         warnings = warnings,
         errors = errors,
@@ -1505,13 +2371,13 @@ end
 -- Calculate drone requirements with accumulation counts (base species only)
 function calculateDroneRequirements(tree)
     if not tree then return {} end
-    
+
     local requirements = {}
-    
+
     -- Calculate base species drone requirements by accumulating all intermediate needs
     local base_drones_needed = {}
     calculateBaseDroneRequirements(tree, base_drones_needed)
-    
+
     -- Convert to the expected format
     for species, count in pairs(base_drones_needed) do
         requirements[species] = {
@@ -1519,14 +2385,14 @@ function calculateDroneRequirements(tree)
             needed = count
         }
     end
-    
+
     return requirements
 end
 
 -- Calculate base species drone requirements by traversing and accumulating
 function calculateBaseDroneRequirements(tree, base_drones_needed)
     if not tree then return end
-    
+
     -- If this is a base species (no mutation) that needs a drone and is not reusing, count it
     if not mutations[tree.species] then
         if tree.need_drone and not tree.reusing_drone then
@@ -1534,7 +2400,7 @@ function calculateBaseDroneRequirements(tree, base_drones_needed)
         end
         return
     end
-    
+
     -- For intermediate species, recurse to their components
     calculateBaseDroneRequirements(tree.left_parent, base_drones_needed)
     calculateBaseDroneRequirements(tree.right_parent, base_drones_needed)
@@ -1554,18 +2420,18 @@ end
 -- Count total breeding steps in the tree
 function countTreeSteps(tree)
     if not tree then return 0 end
-    
+
     local steps = 0
-    
+
     -- If this node requires breeding (has parents), count it
     if tree.left_parent or tree.right_parent then
         steps = steps + 1
     end
-    
+
     -- Add steps from subtrees
     steps = steps + countTreeSteps(tree.left_parent)
     steps = steps + countTreeSteps(tree.right_parent)
-    
+
     return steps
 end
 
@@ -1611,7 +2477,7 @@ end
 --- @return string|nil gunName Name of the gun item if found
 function checkBeebeeGun()
     local stack = inv_controller.getStackInSlot(config.mech_user_inventory_side, config.beebee_gun_slot)
-   
+
     if stack and stack.name then
         local name = stack.name:lower()
         if name:find("beebee") or name:find("bee.*gun") then
@@ -1624,16 +2490,16 @@ end
 -- Wait for beebee gun to be available in Mechanical User
 function waitForBeebeeGun()
     local hasGun, gunName = checkBeebeeGun()
-    
+
     if not hasGun then
         updateStatusIndicators("waiting", "Waiting for beebee gun", gui_state.current_species)
         handleError("Beebee gun not found in Mechanical User slot " .. config.beebee_gun_slot, validateBeebeeGun)
     end
-    
+
     if control_state.abort_requested then
         return false
     end
-    
+
     drawGUI({progress = "Beebee gun ready: " .. gunName, status = "Ready"})
     return true
 end
@@ -1641,7 +2507,7 @@ end
 -- Activate Mechanical User via redstone pulse (with beebee gun check)
 function activateMechanicalUser()
     waitForBeebeeGun()
-    
+
     redstone.setOutput(config.mech_user_side, 15)
     os.sleep(config.pulse_duration)
     redstone.setOutput(config.mech_user_side, 0)
@@ -1650,7 +2516,7 @@ end
 --- Move items between inventories
 --- @param from_side number Source inventory side
 --- @param from_slot number Source slot number
---- @param to_side number Destination inventory side  
+--- @param to_side number Destination inventory side
 --- @param to_slot number|nil Destination slot number (nil for any slot)
 --- @param count number|nil Number of items to move (default 64)
 --- @return boolean success True if items were moved
@@ -1671,7 +2537,7 @@ end
 function findItem(side, pattern)
     local inv_size = inv_controller.getInventorySize(side)
     if not inv_size then return nil end
-    
+
     for slot = 1, inv_size do
         local stack = inv_controller.getStackInSlot(side, slot)
 
@@ -1693,17 +2559,17 @@ function findItemAnyInventory(pattern)
         {side = config.output_chest_side, name = "output chest"},
         {side = config.input_chest_side, name = "input chest"}
     }
-    
+
     for _, location in ipairs(search_order) do
         local slot, stack = findItem(location.side, pattern)
         if slot then
             return location.side, slot, stack
         end
     end
-    
+
     -- Search other inventories
     local all_sides = {sides.up, sides.down, sides.north, sides.south, sides.east, sides.west}
-    
+
     for _, side in ipairs(all_sides) do
         -- Skip already searched sides
         local already_searched = false
@@ -1713,7 +2579,7 @@ function findItemAnyInventory(pattern)
                 break
             end
         end
-        
+
         if not already_searched then
             local inv_size = inv_controller.getInventorySize(side)
             if inv_size and inv_size >= 10 then
@@ -1724,7 +2590,7 @@ function findItemAnyInventory(pattern)
             end
         end
     end
-    
+
     return nil
 end
 
@@ -1739,42 +2605,42 @@ function loadMutatron(parent1, parent2)
     if not should_continue then
         return false, abort_msg
     end
-    
+
     -- Find princess and drone across all inventories
     local princess_side, princess_slot, princess_stack = findItemAnyInventory(parent1 .. ".*(princess|queen)")
     local drone_side, drone_slot, drone_stack = findItemAnyInventory(parent2 .. ".*drone")
-    
+
     if not princess_slot then
-        handleError("Could not find " .. parent1 .. " princess/queen in any inventory!", 
+        handleError("Could not find " .. parent1 .. " princess/queen in any inventory!",
                    function() return validateBeeAvailability(parent1, "princess") end)
         if control_state.abort_requested then return false, "Aborted" end
     end
-    
+
     if not drone_slot then
-        handleError("Could not find " .. parent2 .. " drone in any inventory!", 
+        handleError("Could not find " .. parent2 .. " drone in any inventory!",
                    function() return validateBeeAvailability(parent2, "drone") end)
         if control_state.abort_requested then return false, "Aborted" end
     end
-    
+
     -- Move items to mutatron
     local success1 = moveItem(princess_side, princess_slot, config.mutatron_side, config.mutatron_input_slots[1], 1)
     local success2 = moveItem(drone_side, drone_slot, config.mutatron_side, config.mutatron_input_slots[2], 1)
-    
+
     if not (success1 and success2) then
         handleError("Failed to load mutatron properly - check mutatron inventory space", nil)
         if control_state.abort_requested then return false, "Aborted" end
     end
-    
+
     return true, "Successfully loaded mutatron"
 end
 
 -- Extract queen from mutatron and move to apiary
 function moveQueenToApiary()
     print("Moving queen from mutatron to apiary...")
-    
+
     -- Wait a moment for mutatron to finish
     os.sleep(2)
-    
+
     -- Check if queen is ready
     local queen_stack = inv_controller.getStackInSlot(config.mutatron_side, config.mutatron_output_slot)
     if not queen_stack then
@@ -1784,18 +2650,18 @@ function moveQueenToApiary()
             queen_stack = inv_controller.getStackInSlot(config.mutatron_side, config.mutatron_output_slot)
             if queen_stack then break end
         end
-        
+
         if not queen_stack then
             print("ERROR: No queen produced by mutatron!")
             return false
         end
     end
-    
+
     print("Queen ready! Moving to apiary...")
-    
+
     -- Move queen to apiary
     local success = moveItem(config.mutatron_side, config.mutatron_output_slot, config.apiary_side, config.apiary_input_slot, 1)
-    
+
     if success then
         print("Queen successfully placed in apiary!")
         return true
@@ -1808,10 +2674,10 @@ end
 -- Collect all products from apiary
 function collectApiaryProducts()
     print("Collecting products from apiary...")
-    
+
     local collected_items = {}
     local total_collected = 0
-    
+
     for _, slot in ipairs(config.apiary_output_slots) do
         local stack = inv_controller.getStackInSlot(config.apiary_side, slot)
         if stack and stack.size > 0 then
@@ -1826,10 +2692,10 @@ function collectApiaryProducts()
             end
         end
     end
-    
+
     if total_collected > 0 then
         print("Total items collected: " .. total_collected)
-        
+
         -- Update inventory tracking for queens and drones
         for item_name, count in pairs(collected_items) do
             if item_name:find("queen") then
@@ -1848,7 +2714,7 @@ function collectApiaryProducts()
                 end
             end
         end
-        
+
         return true
     else
         print("No items collected from apiary!")
@@ -1859,7 +2725,7 @@ end
 -- Check if Gendustry APIs are available
 function checkGendustryAPI()
     local hasGendustry = scanGendustryComponents()
-    
+
     if hasGendustry then
         print("Gendustry components detected:")
 
@@ -1886,32 +2752,32 @@ function useGendustryAPI(parent1, parent2, target)
     for name, comp in pairs(gendustry) do
         if name:find("mutatron") then
             print("Attempting to use " .. name .. " for breeding...")
-            
+
             -- Try common method names that might exist
             local methods = getComponentMethods(comp)
-            
+
             -- Look for likely method names
             for _, method in ipairs(methods) do
                 if method:find("breed") or method:find("mutate") or method:find("process") then
                     print("Found potential breeding method: " .. method)
                 end
             end
-            
+
             -- Attempt basic operations (these would need to be adjusted based on actual API)
             if comp.getWorkProgress then
                 local progress = comp.getWorkProgress()
                 print("Mutatron work progress: " .. progress .. "%")
             end
-            
+
             if comp.isWorking then
                 local working = comp.isWorking()
                 print("Mutatron working: " .. tostring(working))
             end
-            
+
             return true
         end
     end
-    
+
     return false
 end
 
@@ -1920,20 +2786,20 @@ function displayBreedingPlan(target, breeding_plan)
     print()
     print("=== BREEDING STRATEGY FOR " .. target:upper() .. " ===")
     print()
-    
+
     if not breeding_plan then
         print("ERROR: Cannot find breeding strategy for " .. target)
         return false
     end
-    
+
     if breeding_plan.total_steps == 0 then
         print("Target bee already available!")
         return true
     end
-    
+
     print("Total estimated steps: " .. breeding_plan.total_steps)
     print()
-    
+
     -- Display starting princesses required
     if #breeding_plan.starting_princesses > 0 then
         print("=== STARTING PRINCESSES REQUIRED ===")
@@ -1943,19 +2809,19 @@ function displayBreedingPlan(target, breeding_plan)
         end
         print()
     end
-    
+
     -- Display drone requirements
     if next(breeding_plan.drone_requirements) then
         print("=== DRONE REQUIREMENTS ===")
         for species, req in pairs(breeding_plan.drone_requirements) do
             local shortage = math.max(0, req.needed - req.available)
             local accumulation = shortage + config.add_drone_count
-            print(string.format("%s: %d available / %d needed (+%d accumulation = %d total)", 
+            print(string.format("%s: %d available / %d needed (+%d accumulation = %d total)",
                   species, req.available, req.needed, config.add_drone_count, accumulation))
         end
         print()
     end
-    
+
     -- Display breeding tree structure
     if breeding_plan.tree then
         print("=== BREEDING TREE ===")
@@ -1963,7 +2829,7 @@ function displayBreedingPlan(target, breeding_plan)
         displayTree(breeding_plan.tree, "", true)
         print()
     end
-    
+
     -- Display execution summary
     print("=== EXECUTION SUMMARY ===")
     print("1. Build the tree from bottom to top (depth-first)")
@@ -1971,19 +2837,19 @@ function displayBreedingPlan(target, breeding_plan)
     print("3. When missing drones, execute accumulation cycles")
     print("4. Resume golden path when drones are available")
     print("5. Each step: Princess + Drone -> Queen -> Apiary -> New Queen + Drones")
-    
+
     return true
 end
 
 -- Display breeding tree structure
 function displayTree(tree, prefix, isLast)
     if not tree then return end
-    
+
     local connector = isLast and "└── " or "├── "
     local status_princess = hasSpeciesPrincess(tree.species) and "P" or " "
     local status_drone = hasSpeciesDrone(tree.species) and "D" or " "
     local breeding_marker = (tree.left_parent or tree.right_parent) and " *" or ""
-    
+
     -- Add optimization marker for nodes that reuse drones from elsewhere
     local optimization_marker = ""
     if tree.reusing_stock then
@@ -1991,11 +2857,11 @@ function displayTree(tree, prefix, isLast)
     elseif tree.reusing_drone then
         optimization_marker = " (reusing)"
     end
-    
+
     print(prefix .. connector .. tree.species .. " [" .. status_princess .. status_drone .. "]" .. breeding_marker .. optimization_marker)
-    
+
     local newPrefix = prefix .. (isLast and "    " or "│   ")
-    
+
     -- Display all children to show complete breeding structure
     if tree.left_parent and tree.right_parent then
         -- Both parents exist
@@ -2005,7 +2871,7 @@ function displayTree(tree, prefix, isLast)
         -- Only princess parent (left)
         displayTree(tree.left_parent, newPrefix, true)
     elseif tree.right_parent then
-        -- Only drone parent (right) 
+        -- Only drone parent (right)
         displayTree(tree.right_parent, newPrefix, true)
     end
 end
@@ -2013,12 +2879,12 @@ end
 -- Helper function to determine if a node should be displayed
 function shouldDisplayNode(tree)
     if not tree then return false end
-    
+
     -- Always show nodes that need breeding (have parents)
     if tree.left_parent or tree.right_parent then
         return true
     end
-    
+
     -- Always show leaf nodes - they represent essential breeding components
     -- Even if they don't need drones, they might be needed as princesses
     return true
@@ -2034,7 +2900,7 @@ function getConfirmation()
     print("4. Exit")
     print()
     io.write("Choice (1-4): ")
-    
+
     local choice = io.read()
     return tonumber(choice) or 0
 end
@@ -2059,11 +2925,11 @@ function selectTarget()
 
     while true do
         setupDisplay()
-        
+
         print("=== BEE SELECTION MENU ===")
         print("Database contains " .. #available_bees .. " bee species")
         print()
-        
+
         -- Show mod filter options
         print("Mod Filters:")
         print("0. All Mods (" .. #available_bees .. " bees)")
@@ -2073,7 +2939,7 @@ function selectTarget()
             print(string.format("%d. %s (%d bees)%s", i, mod, count, active))
         end
         print()
-        
+
         if current_filter then
             filtered_bees = getBeesByMod(current_filter)
             print("Showing " .. current_filter .. " bees:")
@@ -2081,16 +2947,16 @@ function selectTarget()
             filtered_bees = available_bees
             print("Showing all bees:")
         end
-        
+
         -- Show bees with pagination
         local page_size = 15
         local total_pages = math.ceil(#filtered_bees / page_size)
         local current_page = 1
-        
+
         local function showPage(page)
             local start_idx = (page - 1) * page_size + 1
             local end_idx = math.min(page * page_size, #filtered_bees)
-            
+
             for i = start_idx, end_idx do
                 local species = filtered_bees[i]
                 local status = hasSpecies(species) and " [HAVE]" or ""
@@ -2098,20 +2964,20 @@ function selectTarget()
 
                 print(string.format("%2d. %s%s%s", i, species, status, mod_info))
             end
-            
+
             if total_pages > 1 then
                 print()
                 print("Page " .. page .. " of " .. total_pages)
                 print("Commands: n=next page, p=prev page, f=filter, s=search")
             end
         end
-        
+
         showPage(current_page)
 
         print()
         io.write("Choice (number/command): ")
         local input = io.read()
-        
+
         if input == "n" and current_page < total_pages then
             current_page = current_page + 1
         elseif input == "p" and current_page > 1 then
@@ -2208,17 +3074,17 @@ function handleError(error_message, validation_func)
     control_state.error_state = true
     control_state.last_error = error_message
     control_state.validation_required = validation_func ~= nil
-    
+
     gui_state.errors = error_message
     gui_state.status = "Error"
     drawGUI({errors = error_message, status = "Error"})
-    
+
     -- Update status indicators
     updateStatusIndicators("error", "ERROR: " .. error_message, gui_state.current_species)
-    
+
     computer.beep(1000, 0.5) -- Error beep
     computer.beep(800, 0.3)
-    
+
     -- Wait for user intervention
     waitForUserAction(validation_func)
 end
@@ -2227,21 +3093,21 @@ end
 --- @param validation_func function|nil Function to validate fix before resuming
 function waitForUserAction(validation_func)
     drawGUI({progress = "PAUSED - Press [R]esume, [A]bort, or [Q]uit", status = "Paused"})
-    
+
     while control_state.error_state or control_state.paused do
         -- Check for keyboard input (non-blocking)
         local eventType, address, char, code = event.pull(0.1, "key_down")
-        
+
         if eventType then
             local key = string.char(char):lower()
-            
+
             if key == 'r' then
                 -- Resume request
                 if control_state.error_state and validation_func then
                     -- Validate that the issue is fixed
                     drawGUI({progress = "Validating fix...", status = "Validating"})
                     local success, error_msg = validation_func()
-                    
+
                     if success then
                         -- Issue fixed, can resume
                         control_state.error_state = false
@@ -2268,7 +3134,7 @@ function waitForUserAction(validation_func)
                     os.sleep(1)
                     break
                 end
-                
+
             elseif key == 'a' or key == 'q' then
                 -- Abort request
                 control_state.abort_requested = true
@@ -2279,7 +3145,7 @@ function waitForUserAction(validation_func)
                 updateStatusIndicators("aborted", "Operation aborted by user", gui_state.current_species)
                 computer.beep(400, 0.8) -- Abort beep
                 break
-                
+
             elseif key == 'p' and not control_state.error_state then
                 -- Manual pause toggle
                 control_state.paused = not control_state.paused
@@ -2293,7 +3159,7 @@ function waitForUserAction(validation_func)
                 end
             end
         end
-        
+
         os.sleep(0.1) -- Small delay to prevent CPU spinning
     end
 end
@@ -2305,7 +3171,7 @@ function checkContinue()
     if control_state.abort_requested then
         return false, "Operation aborted by user"
     end
-    
+
     -- Check for manual pause/abort keypress (non-blocking)
     local eventType, address, char, code = event.pull(0, "key_down")
     if eventType then
@@ -2318,11 +3184,11 @@ function checkContinue()
             return false, "Operation aborted by user"
         end
     end
-    
+
     if control_state.paused and not control_state.error_state then
         waitForUserAction()
     end
-    
+
     return not control_state.abort_requested, nil
 end
 
@@ -2378,17 +3244,19 @@ function setStatusLamp(color)
     end
 end
 
---- Send chat notification message
+--- Send notification interface message
 --- @param message string The message to send
 --- @param player string|nil Specific player to send to (nil for broadcast)
 function sendChatNotification(message, player)
-    if config.use_chat_notifications and chat_box then
+    if config.use_chat_notifications and notification_interface then
         player = player or config.chat_player_name
-        if player then
-            chat_box.tell(player, "[HiveMind] " .. message)
-        else
-            chat_box.say("[HiveMind] " .. message)
-        end
+        -- Use notify function: notify(title, description, iconName, iconMeta)
+        local title = "HiveMind"
+        local description = message
+        local icon = "forestry:bee_drone_ge" -- Use a bee-related icon if available
+        local iconMeta = 0
+
+        notification_interface.notify(title, description, icon, iconMeta)
     end
 end
 
@@ -2410,7 +3278,7 @@ local status_colors = {
 function updateStatusIndicators(state, message, species)
     local color = status_colors[state] or status_colors.idle
     setStatusLamp(color)
-    
+
     if message then
         local chat_message = message
         if species then
@@ -2423,13 +3291,13 @@ end
 --- Initialize the GUI display
 function initGUI()
     local width, height = gpu.getResolution()
-    
+
     -- Clear screen and set up GUI layout
     term.clear()
     gpu.setResolution(80, 25)
     gpu.setBackground(0x000000)
     gpu.setForeground(0xFFFFFF)
-    
+
     -- Draw static GUI frame
     drawGUIFrame()
 end
@@ -2437,7 +3305,7 @@ end
 function drawGUIFrame()
     -- Draw top border
     gpu.set(1, 1, "╔" .. string.rep("═", 78) .. "╗")
-    
+
     -- Draw section separators
     gpu.set(1, 3, "╠" .. string.rep("═", 78) .. "╣")
     gpu.set(1, 6, "╠" .. string.rep("═", 78) .. "╣")
@@ -2445,16 +3313,16 @@ function drawGUIFrame()
     gpu.set(1, 12, "╠" .. string.rep("═", 78) .. "╣")
     gpu.set(1, 15, "╠" .. string.rep("═", 78) .. "╣")
     gpu.set(1, 18, "╠" .. string.rep("═", 78) .. "╣")
-    
+
     -- Draw bottom border
     gpu.set(1, 25, "╚" .. string.rep("═", 78) .. "╝")
-    
+
     -- Draw side borders
     for i = 2, 24 do
         gpu.set(1, i, "║")
         gpu.set(80, i, "║")
     end
-    
+
     -- Draw section labels
     gpu.set(3, 2, "Target:")
     gpu.set(3, 4, "Current Step:")
@@ -2485,17 +3353,17 @@ function drawGUI(args)
     if args.inventory_status then gui_state.inventory_status = args.inventory_status end
     if args.errors then gui_state.errors = args.errors end
     if args.status then gui_state.status = args.status end
-    
+
     -- Clear content areas (keep borders)
     for i = 2, 24 do
         if i ~= 3 and i ~= 6 and i ~= 9 and i ~= 12 and i ~= 15 and i ~= 18 then
             gpu.set(2, i, string.rep(" ", 78))
         end
     end
-    
+
     -- Draw target
     gpu.set(12, 2, gui_state.current_species or "")
-    
+
     -- Draw current step info
     local step_info = ""
     if gui_state.step_type then
@@ -2512,27 +3380,27 @@ function drawGUI(args)
         step_info = gui_state.current_species or ""
     end
     gpu.set(16, 4, step_info)
-    
+
     -- Draw sub-step progress
     gpu.set(3, 5, gui_state.progress)
-    
+
     -- Draw progress bar
     local progress_width = 70
     local filled = 0
     if gui_state.total_steps > 0 then
         filled = math.floor((gui_state.current_step / gui_state.total_steps) * progress_width)
     end
-    
+
     local progress_bar = "[" .. string.rep("█", filled) .. string.rep("░", progress_width - filled) .. "]"
     gpu.set(3, 8, progress_bar)
-    
+
     -- Draw step counter
     local step_text = string.format("Step %d/%d", gui_state.current_step, gui_state.total_steps)
     gpu.set(76 - string.len(step_text), 8, step_text)
-    
+
     -- Draw inventory status
     gpu.set(3, 11, gui_state.inventory_status)
-    
+
     -- Draw status with color
     local status_color = 0xFFFFFF -- White
     if gui_state.status == "Running" then
@@ -2544,11 +3412,11 @@ function drawGUI(args)
     elseif gui_state.status == "Complete" then
         status_color = 0x00FFFF -- Cyan
     end
-    
+
     gpu.setForeground(status_color)
     gpu.set(11, 13, gui_state.status)
     gpu.setForeground(0xFFFFFF)
-    
+
     -- Draw errors/warnings
     if gui_state.errors and gui_state.errors ~= "" then
         gpu.setForeground(0xFF0000) -- Red for errors
@@ -2567,7 +3435,7 @@ end
 function wrapText(text, width)
     local lines = {}
     local current_line = ""
-    
+
     for word in text:gmatch("%S+") do
         if string.len(current_line .. " " .. word) <= width then
             if current_line == "" then
@@ -2582,11 +3450,11 @@ function wrapText(text, width)
             current_line = word
         end
     end
-    
+
     if current_line ~= "" then
         table.insert(lines, current_line)
     end
-    
+
     return lines
 end
 
@@ -2601,12 +3469,12 @@ function executeBreeding(target, breeding_plan)
         print("No breeding required - target already available!")
         return true
     end
-    
+
     -- Initialize GUI and status indicators
     initGUI()
     setGUITarget(target)
     updateStatusIndicators("working", "Starting breeding sequence", target)
-    
+
     -- Initial GUI state
     drawGUI({
         step_type = "breeding",
@@ -2617,13 +3485,13 @@ function executeBreeding(target, breeding_plan)
         inventory_status = "Checking inventory...",
         status = "Running"
     })
-    
+
     local hasAPI = checkGendustryAPI()
-    
+
     -- Execute the breeding tree
     gui_state.current_step = 0
     local success = executeBreedingTree(breeding_plan.tree, breeding_plan.drone_requirements, hasAPI, breeding_plan.total_steps)
-    
+
     if success then
         drawGUI({
             step_type = "complete",
@@ -2633,7 +3501,7 @@ function executeBreeding(target, breeding_plan)
             status = "Complete"
         })
         computer.beep(1000, 0.5)
-        
+
         -- Final inventory scan
         scanInventory()
     else
@@ -2645,97 +3513,351 @@ function executeBreeding(target, breeding_plan)
             status = "Error"
         })
     end
-    
+
     return success
 end
 
--- Execute breeding tree recursively (depth-first, post-order)
-function executeBreedingTree(tree, drone_requirements, hasAPI, total_steps)
-    if not tree then return true end
-    
-    -- Post-order: execute children first, then current node
-    
-    -- Execute left subtree (princess lineage)
-    if tree.left_parent then
-        local success = executeBreedingTree(tree.left_parent, drone_requirements, hasAPI, total_steps)
-        if not success then return false end
+-- Execute breeding tree with smart dependency ordering to handle reuse correctly
+-- Find a breeding-capable node for a given species in the tree (has parents and not reusing)
+local function findBreedingNodeForSpecies(root, species)
+    local found = nil
+    local function dfs(node)
+        if not node or found then return end
+        if node.species == species and (node.left_parent or node.right_parent) and not node.reusing_drone then
+            found = node
+            return
+        end
+        dfs(node.left_parent)
+        dfs(node.right_parent)
     end
-    
-    -- Execute right subtree (drone lineage)
-    if tree.right_parent then
-        local success = executeBreedingTree(tree.right_parent, drone_requirements, hasAPI, total_steps)
-        if not success then return false end
-    end
-    
-    -- Execute current node if breeding is required
-    if tree.left_parent or tree.right_parent then
-        local parents = mutations[tree.species].parents
-        local princess_parent = parents[1]
-        local drone_parent = parents[2]
-        
-        drawGUI({
-            current_species = tree.species,
-            step_type = "breeding",
-            progress = "Breeding: " .. princess_parent .. " + " .. drone_parent .. " -> " .. tree.species
-        })
-        
-        -- Check if we need accumulation for the drone
-        local drone_req = drone_requirements[drone_parent]
-        if drone_req and drone_req.needed and drone_req.available and drone_req.needed > drone_req.available then
-            local shortage = drone_req.needed - drone_req.available
-            local total_needed = shortage + (config.add_drone_count or 1)
+    dfs(root)
+    return found
+end
+-- Helper function to check if there's a primary breeding node for a species in the tree
+function hasPrimaryBreedingNodeForSpecies(tree, species)
+    if not tree then return false end
 
-            for cycle = 1, total_needed do
-                drawGUI({
-                    current_species = drone_parent,
-                    step_type = "accumulation",
-                    progress = "Accumulation cycle " .. cycle .. "/" .. total_needed .. " for " .. drone_parent
-                })
-                
-                local success = executeAccumulationCycle(drone_parent)
-                if not success then
-                    drawGUI({
-                        errors = "Accumulation cycle failed for " .. drone_parent
-                    })
-                end
-                
-                -- TODO: if we get multiple drones per cycle, we should update available count accordingly
-                -- Update available count
-                if drone_req.available then
-                    drone_req.available = drone_req.available + 1
+    -- Check if this node is a primary breeding node for the target species
+    if tree.species == species and tree.is_primary_breeding_node then
+        return true
+    end
+
+    -- Recursively check children
+    return hasPrimaryBreedingNodeForSpecies(tree.left_parent, species) or
+           hasPrimaryBreedingNodeForSpecies(tree.right_parent, species)
+end
+
+-- Topologically sort primary breeding nodes by their dependencies
+function topologicalSortByDependencies(primary_nodes)
+    local sorted = {}
+    local visited = {}
+    local visiting = {}
+
+    -- Start topological sort (debug prints removed)
+    for _, _ in ipairs(primary_nodes) do end
+
+    local function visit(node)
+        if visiting[node] then
+            -- Circular dependency detected; handled gracefully
+            return
+        end
+
+        if visited[node] then
+            return
+        end
+
+        visiting[node] = true
+        -- Visiting node (debug removed)
+
+        -- Visit dependencies first (nodes that this node depends on)
+        -- For dependency analysis, we care about the species, not the specific instance
+        if node.left_parent then
+            -- Find the primary breeding node for this dependency
+            for _, dep_node in ipairs(primary_nodes) do
+                if dep_node.species == node.left_parent.species and dep_node.is_primary_breeding_node then
+                    visit(dep_node)
+                    break
                 end
             end
         end
-        
-        -- Execute the actual breeding step
-        local success = executeSingleBreedingStep(princess_parent, drone_parent, tree.species, hasAPI)
-        if not success then
+
+        if node.right_parent then
+            -- Find the primary breeding node for this dependency
+            local found_dep = false
+            for _, dep_node in ipairs(primary_nodes) do
+                if dep_node.species == node.right_parent.species and dep_node.is_primary_breeding_node then
+                    visit(dep_node)
+                    found_dep = true
+                    break
+                end
+            end
+            -- If no dep found, we still proceed; debug removed
+        end
+
+        visiting[node] = false
+        visited[node] = true
+        table.insert(sorted, node)
+    end
+
+    -- Visit all primary nodes
+    for _, node in ipairs(primary_nodes) do
+        visit(node)
+    end
+
+    -- Topological sort complete (debug prints removed)
+
+    return sorted
+end
+
+-- Execute a single breeding node with all validation and accumulation
+function executeSingleBreedingNode(node, drone_requirements, hasAPI, total_steps)
+    if not node or _G.execution_bred_species[node.species] then
+        return true
+    end
+    -- Skip reused nodes unless explicitly designated as primary breeder for their species
+    if node.reusing_drone and not node.is_primary_breeding_node then
+        return true
+    end
+
+    local parents = mutations[node.species].parents
+    local princess_parent = parents[1]
+    local drone_parent = parents[2]
+
+    -- Enhanced validation: check if parents are available (bred earlier or base species)
+    local princess_available = hasSpeciesPrincess(princess_parent) or _G.execution_bred_species[princess_parent]
+    local drone_available = hasSpeciesDrone(drone_parent) or _G.execution_bred_species[drone_parent]
+
+    -- Attempt on-demand breeding of missing parents (handles non-primary dependencies like Esoteric)
+    _G._breeding_stack = _G._breeding_stack or {}
+    local function ensureSpeciesBred(spec)
+        if _G.execution_bred_species[spec] then return true end
+        -- Base species cannot be bred here; rely on inventory
+        if not mutations[spec] then
+            return hasSpeciesPrincess(spec) and hasSpeciesDrone(spec)
+        end
+        -- Prevent recursion cycles
+        if _G._breeding_stack[spec] then return false end
+        _G._breeding_stack[spec] = true
+        -- Find a node in the current tree capable of breeding this species
+        local root = _G._current_execution_root
+        local dep_node = root and findBreedingNodeForSpecies(root, spec) or nil
+        local ok = false
+        if dep_node then
+            ok = executeSingleBreedingNode(dep_node, drone_requirements, hasAPI, total_steps)
+        end
+        _G._breeding_stack[spec] = nil
+        return ok or _G.execution_bred_species[spec] or (hasSpeciesPrincess(spec) and hasSpeciesDrone(spec))
+    end
+
+    if not princess_available then
+        if not ensureSpeciesBred(princess_parent) then
             drawGUI({
-                current_species = tree.species,
+                current_species = node.species,
                 step_type = "breeding",
-                progress = "FAILED: " .. tree.species,
-                errors = "Could not complete breeding step for " .. tree.species,
+                progress = "ERROR: Princess " .. princess_parent .. " not available for " .. node.species,
+                errors = "Missing required princess: " .. princess_parent,
                 status = "Error"
             })
             return false
         end
-        
-        -- Update step counter and GUI status
-        gui_state.current_step = gui_state.current_step + 1
-        drawGUI({
-            current_species = tree.species,
-            step_type = "breeding",
-            progress = "Completed " .. tree.species,
-            current_step = gui_state.current_step,
-            total_steps = total_steps
-        })
+        princess_available = true
     end
-    
+
+    if not drone_available then
+        if not ensureSpeciesBred(drone_parent) then
+            drawGUI({
+                current_species = node.species,
+                step_type = "breeding",
+                progress = "ERROR: Drone " .. drone_parent .. " not available for " .. node.species,
+                errors = "Missing required drone: " .. drone_parent,
+                status = "Error"
+            })
+            return false
+        end
+        drone_available = true
+    end
+
+    drawGUI({
+        current_species = node.species,
+        step_type = "breeding",
+        progress = "Breeding: " .. princess_parent .. " + " .. drone_parent .. " -> " .. node.species
+    })
+
+    -- Check if we need accumulation for the drone
+    local drone_req = drone_requirements[drone_parent]
+    if drone_req and drone_req.needed and drone_req.available and drone_req.needed > drone_req.available then
+        local shortage = drone_req.needed - drone_req.available
+        local total_needed = shortage + (config.add_drone_count or 1)
+
+        for cycle = 1, total_needed do
+            drawGUI({
+                current_species = drone_parent,
+                step_type = "accumulation",
+                progress = "Accumulation cycle " .. cycle .. "/" .. total_needed .. " for " .. drone_parent
+            })
+
+            local success = executeAccumulationCycle(drone_parent)
+            if not success then
+                drawGUI({
+                    errors = "Accumulation cycle failed for " .. drone_parent
+                })
+                return false
+            end
+
+            -- Update available count
+            if drone_req.available then
+                drone_req.available = drone_req.available + 1
+            end
+        end
+    end
+
+    -- Execute the actual breeding step
+    local success = executeSingleBreedingStep(princess_parent, drone_parent, node.species, hasAPI)
+    if not success then
+        drawGUI({
+            current_species = node.species,
+            step_type = "breeding",
+            progress = "FAILED: " .. node.species,
+            errors = "Could not complete breeding step for " .. node.species,
+            status = "Error"
+        })
+        return false
+    end
+
+    -- Mark this species as successfully bred in this execution session
+    _G.execution_bred_species[node.species] = true
+
+    -- Update step counter and GUI status
+    gui_state.current_step = gui_state.current_step + 1
+    drawGUI({
+        current_species = node.species,
+        step_type = "breeding",
+        progress = "Completed " .. node.species,
+        current_step = gui_state.current_step,
+        total_steps = total_steps
+    })
+
+    return true
+end
+
+function executeBreedingTree(tree, drone_requirements, hasAPI, total_steps)
+    if not tree then return true end
+
+    -- Initialize global tracking for species bred in this execution session
+    if not _G.execution_bred_species then
+        _G.execution_bred_species = {}
+    end
+
+    -- First pass: collect all breeding nodes that need to be executed
+    local all_breeding_nodes = {}
+    local primary_breeding_nodes = {}
+
+    local function collectBreedingNodes(node)
+        if not node then return end
+
+    -- Debug output removed
+
+        -- Collect this node if it requires breeding and either:
+        -- 1. It's not marked as reusing, OR
+        -- 2. It's a primary breeding node (even if marked as reusing)
+        local should_collect = (node.left_parent or node.right_parent) and
+                              (not node.reusing_drone or node.is_primary_breeding_node)
+
+        if should_collect then
+            table.insert(all_breeding_nodes, node)
+
+            -- Separate primary breeding nodes
+            if node.is_primary_breeding_node then
+                table.insert(primary_breeding_nodes, node)
+                -- Track as primary breeding node
+            end
+        end
+
+        -- Recursively collect from children
+        collectBreedingNodes(node.left_parent)
+        collectBreedingNodes(node.right_parent)
+    end
+
+    collectBreedingNodes(tree)
+    -- Expose root for on-demand dependency breeding
+    _G._current_execution_root = tree
+
+    -- Fallback: ensure every breeding species has at least one primary node
+    -- Only consider instances that were actually collected from the tree
+    local species_found = {}
+    for _, node in ipairs(all_breeding_nodes) do
+        species_found[node.species] = species_found[node.species] or {}
+        table.insert(species_found[node.species], node)
+    end
+
+    -- For species with no primary breeding nodes, designate the first collected instance as primary
+    for species, instances in pairs(species_found) do
+        local has_primary = false
+        for _, instance in ipairs(instances) do
+            if instance.is_primary_breeding_node then
+                has_primary = true
+                break
+            end
+        end
+
+        if not has_primary and #instances > 0 then
+            instances[1].is_primary_breeding_node = true
+            table.insert(primary_breeding_nodes, instances[1])
+            -- Fallback: designated instance as primary breeding node
+
+            -- Debug: Check the parent connections of this fallback primary node
+            -- Debug inspection removed
+        end
+    end
+
+    -- Second pass: topologically sort primary breeding nodes by dependencies
+    local sorted_primary_nodes = topologicalSortByDependencies(primary_breeding_nodes)
+
+    -- Third pass: execute nodes in dependency-aware order
+    -- 1. Execute sorted primary breeding nodes first
+    for _, node in ipairs(sorted_primary_nodes) do
+        local success = executeSingleBreedingNode(node, drone_requirements, hasAPI, total_steps)
+        if not success then return false end
+    end
+
+    -- 2. Execute remaining non-primary nodes using post-order traversal
+    local function executeRemainingNodes(node)
+        if not node then return true end
+
+        -- Execute children first (post-order)
+        if node.left_parent then
+            local success = executeRemainingNodes(node.left_parent)
+            if not success then return false end
+        end
+
+        if node.right_parent then
+            local success = executeRemainingNodes(node.right_parent)
+            if not success then return false end
+        end
+
+        -- Execute current node if it needs breeding, isn't primary, and hasn't been bred yet
+        if (node.left_parent or node.right_parent) and not node.reusing_drone and
+           not node.is_primary_breeding_node and not _G.execution_bred_species[node.species] then
+            local success = executeSingleBreedingNode(node, drone_requirements, hasAPI, total_steps)
+            if not success then return false end
+        end
+
+        return true
+    end
+
+    -- Execute remaining non-primary nodes
+    local success = executeRemainingNodes(tree)
+    if not success then return false end
+
     -- Final completion status if this is the top-level call
     if tree and tree.species == gui_state.target then
         updateStatusIndicators("complete", "All breeding completed successfully!", tree.species)
+        -- Clean up execution tracking
+        _G.execution_bred_species = nil
+        _G._current_execution_root = nil
+        _G._breeding_stack = nil
     end
-    
+
     return true
 end
 
@@ -2752,7 +3874,7 @@ function executeSingleBreedingStep(princess_species, drone_species, target_speci
     if not should_continue then
         return false, abort_msg
     end
-    
+
     -- Phase 1: Load Mutatron
     drawGUI({current_species = target_species, step_type = "Loading", progress = "Loading: " .. princess_species .. " + " .. drone_species, status = "Working"})
     -- Only update lamp status, no chat spam
@@ -2761,7 +3883,7 @@ function executeSingleBreedingStep(princess_species, drone_species, target_speci
     if not load_success then
         return false, load_msg
     end
-    
+
     -- Phase 2: Activate Mutatron
     if hasAPI then
         local api_success = useGendustryAPI(princess_species, drone_species, target_species)
@@ -2771,14 +3893,14 @@ function executeSingleBreedingStep(princess_species, drone_species, target_speci
     else
         activateMechanicalUser()
     end
-    
+
     -- Phase 3: Move Queen to Apiary
     local queen_success = moveQueenToApiary()
     if not queen_success then
         drawGUI({step_type = "Breeding", progress = "Moving queen failed", errors = "Could not move queen to apiary", status = "Error"})
         return false
     end
-    
+
     -- Phase 4: Process in Apiary
     activateMechanicalUser()
     for t = 1, config.apiary_wait_time do
@@ -2792,13 +3914,13 @@ function executeSingleBreedingStep(princess_species, drone_species, target_speci
         end
         os.sleep(1)
     end
-    
+
     -- Phase 5: Collect Products
     local collect_success = collectApiaryProducts()
     if not collect_success then
         drawGUI({step_type = "Collecting", progress = "Collection warning", errors = "No products collected", status = "Warning"})
     end
-    
+
     drawGUI({step_type = "Complete", progress = "Breeding step complete", status = "Completed"})
     -- Only update lamp status, no chat spam
     setStatusLamp(status_colors.working)
@@ -2813,30 +3935,30 @@ end
 --- @return string|nil errorMessage Error message if cycle failed
 function executeAccumulationCycle(species)
     drawGUI({current_species = species, step_type = "Accumulation", progress = "Running accumulation cycle", status = "Working"})
-    
+
     -- Find existing queen of this species across all inventories
     local queen_side, queen_slot, queen_stack = findItemAnyInventory(species .. ".*queen")
     if not queen_slot then
         drawGUI({progress = "Accumulation failed", errors = "No " .. species .. " queen found", status = "Error"})
         return false
     end
-    
+
     -- Move queen to apiary
     local success = moveItem(queen_side, queen_slot, config.apiary_side, config.apiary_input_slot, 1)
     if not success then
         drawGUI({progress = "Move failed", errors = "Failed to move queen to apiary", status = "Error"})
         return false
     end
-    
+
     -- Activate apiary
     activateMechanicalUser()
-    
+
     -- Wait for processing
     os.sleep(config.apiary_wait_time)
-    
+
     -- Collect products
     collectApiaryProducts()
-    
+
     drawGUI({progress = "Accumulation cycle complete", status = "Completed"})
 
     return true
@@ -2845,18 +3967,18 @@ end
 -- Main program loop
 function main()
     setupDisplay()
-    
+
     while true do
         scanInventory()
-        
+
         local target = selectTarget()
         if not target then
             print("Goodbye!")
             break
         end
-        
+
         local breeding_plan = calculateBreedingPath(target)
-        
+
         -- Check if plan failed due to critical errors
         if breeding_plan and breeding_plan.plan_failed then
             print("Press anything to continue...")
@@ -2865,15 +3987,15 @@ function main()
             while true do
                 setupDisplay()
                 local success = displayBreedingPlan(target, breeding_plan)
-                
+
                 if not success then
                     print("Press anything to continue...")
                     io.read()
                     break
                 end
-                
+
                 local choice = getConfirmation()
-                
+
                 if choice == 1 then
                     executeBreeding(target, breeding_plan)
                     print("Press anything to continue...")
@@ -2896,36 +4018,30 @@ function main()
     end
 end
 
--- Export functions for testing or run main program
-if ... then
-    -- Module is being required, export functions for testing
-    return {
-        -- Planning functions
-        calculateBreedingPath = calculateBreedingPath,
-        buildBreedingTree = buildBreedingTree,
-        findStartingPrincesses = findStartingPrincesses, 
-        calculateDroneRequirements = calculateDroneRequirements,
-        displayTree = displayTree,
-        
-        -- Execution functions
-        executeBreedingTree = executeBreedingTree,
-        executeSingleBreedingStep = executeSingleBreedingStep,
-        executeAccumulationCycle = executeAccumulationCycle,
-        
-        -- Utility functions
-        getSideName = getSideName,
-        hasSpeciesPrincess = hasSpeciesPrincess,
-        hasSpeciesDrone = hasSpeciesDrone,
-        
-        -- Status functions (for integration tests)
-        updateStatusIndicators = updateStatusIndicators,
-        checkBeebeeGun = checkBeebeeGun,
-        
-        -- Data
-        mutations = mutations,
-        config = config
-    }
-else
-    -- Module is being executed directly, run the main program
-    main()
-end
+-- Always export module functions (tests import this module)
+return {
+    -- Planning functions
+    calculateBreedingPath = calculateBreedingPath,
+    buildBreedingTree = buildBreedingTree,
+    findStartingPrincesses = findStartingPrincesses,
+    calculateDroneRequirements = calculateDroneRequirements,
+    displayTree = displayTree,
+
+    -- Execution functions
+    executeBreedingTree = executeBreedingTree,
+    executeSingleBreedingStep = executeSingleBreedingStep,
+    executeAccumulationCycle = executeAccumulationCycle,
+
+    -- Utility functions
+    getSideName = getSideName,
+    hasSpeciesPrincess = hasSpeciesPrincess,
+    hasSpeciesDrone = hasSpeciesDrone,
+
+    -- Status functions (for integration tests)
+    updateStatusIndicators = updateStatusIndicators,
+    checkBeebeeGun = checkBeebeeGun,
+
+    -- Data
+    mutations = mutations,
+    config = config
+}
