@@ -8,7 +8,7 @@ echo "🔧 Setting up HiveMind pre-commit hooks..."
 # Check if pre-commit is installed
 if ! command -v pre-commit &> /dev/null; then
     echo "📦 Installing pre-commit..."
-    
+
     # Try different installation methods
     if command -v pip &> /dev/null; then
         pip install pre-commit
@@ -40,9 +40,6 @@ fi
 # Install the pre-commit hooks
 echo "⚙️  Installing pre-commit hooks..."
 pre-commit install
-
-# Create artifacts directory
-mkdir -p Artifacts
 
 echo "✅ Pre-commit setup complete!"
 echo ""

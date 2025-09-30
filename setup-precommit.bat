@@ -7,7 +7,7 @@ echo 🔧 Setting up HiveMind pre-commit hooks...
 pre-commit --version >nul 2>&1
 if errorlevel 1 (
     echo 📦 Installing pre-commit...
-    
+
     :: Try pip installation
     pip --version >nul 2>&1
     if not errorlevel 1 (
@@ -40,14 +40,11 @@ if errorlevel 1 (
 echo ⚙️  Installing pre-commit hooks...
 pre-commit install
 
-:: Create artifacts directory
-if not exist "Artifacts" mkdir "Artifacts"
-
 echo ✅ Pre-commit setup complete!
 echo.
 echo 📋 Available commands:
 echo   pre-commit run --all-files                           # Run all hooks on all files
-echo   pre-commit run                                        # Run hooks on staged files  
+echo   pre-commit run                                        # Run hooks on staged files
 echo   pre-commit run --hook-stage manual --all-files       # Run performance tests
 echo.
 echo 🎯 Pre-commit will now automatically run tests before each commit!

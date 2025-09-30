@@ -15,7 +15,7 @@ repos:
         language: system
         files: '\.lua$'
         pass_filenames: false
-        
+
       # Core planning tests
       - id: hivemind-planning-tests
         name: HiveMind Planning Tests
@@ -24,7 +24,7 @@ repos:
         language: system
         files: '(main|test_planning)\.lua$'
         pass_filenames: false
-        
+
       # Execution tests
       - id: hivemind-execution-tests
         name: HiveMind Execution Tests
@@ -33,7 +33,7 @@ repos:
         language: system
         files: '(main|test_planning)\.lua$'
         pass_filenames: false
-        
+
       # Error handling tests
       - id: hivemind-error-handling
         name: HiveMind Error Handling Tests
@@ -42,7 +42,7 @@ repos:
         language: system
         files: '(main|test_planning)\.lua$'
         pass_filenames: false
-        
+
       # Example usage validation
       - id: hivemind-example-tests
         name: HiveMind Example Tests
@@ -79,7 +79,7 @@ repos:
         files: '(main|test_planning)\.lua$'
         pass_filenames: false
         stages: [manual]  # Only run when explicitly requested
-        
+
       - id: hivemind-stress-tests
         name: HiveMind Stress Tests (Manual)
         entry: lua
