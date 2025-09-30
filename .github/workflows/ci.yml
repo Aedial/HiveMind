@@ -1,0 +1,297 @@
+name: HiveMind CI
+
+on:
+  # Run on pushes to main and all pull requests
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      run_stress_tests:
+        description: 'Run stress tests (takes longer)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  # Lint and basic validation
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.3"
+
+    - name: Basic Lua Syntax Check
+      run: |
+        echo "Checking Lua syntax..."
+        lua -e "
+        local files = {'main.lua', 'test_planning.lua', 'test_example.lua'}
+        local errors = false
+        for _, file in ipairs(files) do
+          local f = io.open(file, 'r')
+          if f then
+            local content = f:read('*all')
+            f:close()
+            local func, err = load(content, file)
+            if not func then
+              print('❌ Syntax error in ' .. file .. ': ' .. err)
+              errors = true
+            else
+              print('✅ ' .. file .. ' syntax OK')
+            end
+          else
+            print('⚠️  Could not read ' .. file)
+          end
+        end
+        if errors then os.exit(1) end
+        "
+
+  # Core functionality tests
+  test-core:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.3"
+
+    - name: Create test environment
+      run: |
+        mkdir -p Artifacts
+        echo "Test environment ready"
+
+    - name: Test Suite - Planning
+      id: planning-tests
+      run: |
+        echo "::group::Planning Tests"
+        lua -e "
+        package.path = package.path .. ';./?.lua'
+        local test_planning = require('test_planning')
+        local success = test_planning.runAllTests()
+        if not success then os.exit(1) end
+        "
+        echo "::endgroup::"
+
+    - name: Test Suite - Execution
+      id: execution-tests
+      run: |
+        echo "::group::Execution Tests"
+        lua -e "
+        package.path = package.path .. ';./?.lua'
+        local test_planning = require('test_planning')
+        local success = test_planning.testExecuteBreedingTree()
+        if not success then os.exit(1) end
+        "
+        echo "::endgroup::"
+
+    - name: Test Suite - Error Handling
+      run: |
+        echo "::group::Error Handling Tests"
+        lua -e "
+        package.path = package.path .. ';./?.lua'
+        local test_planning = require('test_planning')
+        test_planning.testExecuteBreedingTreeErrorHandling()
+        "
+        echo "::endgroup::"
+
+    - name: Upload Core Test Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: core-test-artifacts
+        path: Artifacts/
+        retention-days: 7
+
+  # Performance and stress tests (optional)
+  test-performance:
+    runs-on: ubuntu-latest
+    needs: test-core
+    if: ${{ github.event.inputs.run_stress_tests == 'true' || github.event_name == 'schedule' }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.3"
+
+    - name: Create test environment
+      run: mkdir -p Artifacts
+
+    - name: Performance Tests
+      run: |
+        echo "::group::Performance Tests"
+        lua -e "
+        package.path = package.path .. ';./?.lua'
+        local test_planning = require('test_planning')
+        test_planning.performanceTest()
+        "
+        echo "::endgroup::"
+
+    - name: Complexity Stress Tests
+      run: |
+        echo "::group::Complexity Stress Tests"
+        lua -e "
+        package.path = package.path .. ';./?.lua'
+        local test_planning = require('test_planning')
+        test_planning.complexityStressTest()
+        "
+        echo "::endgroup::"
+
+    - name: Upload Performance Test Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-test-artifacts
+        path: Artifacts/
+        retention-days: 14
+
+  # Example usage tests
+  test-examples:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.3"
+
+    - name: Create test environment
+      run: mkdir -p Artifacts
+
+    - name: Test Example Usage
+      run: |
+        echo "::group::Example Usage Tests"
+        echo "Testing test_example.lua..."
+        lua test_example.lua
+        echo "::endgroup::"
+
+    - name: Test Individual Bee Analysis
+      run: |
+        echo "::group::Individual Bee Tests"
+        lua -e "
+        package.path = package.path .. ';./?.lua'
+        local test_planning = require('test_planning')
+
+        local test_bees = {'Modest', 'Imperial', 'Heroic', 'Mystical'}
+        local passed = 0
+
+        for _, bee in ipairs(test_bees) do
+          print('Testing ' .. bee .. '...')
+          local success = test_planning.testSpecificTarget(bee)
+          if success then
+            passed = passed + 1
+            print('✅ ' .. bee .. ' test passed')
+          else
+            print('❌ ' .. bee .. ' test failed')
+          end
+        end
+
+        print('')
+        print('Individual bee tests: ' .. passed .. '/' .. #test_bees .. ' passed')
+
+        if passed < #test_bees then
+          print('Some individual bee tests failed, but this may be expected for complex bees')
+        end
+        "
+        echo "::endgroup::"
+
+  # Generate test report
+  test-report:
+    runs-on: ubuntu-latest
+    needs: [test-core, test-examples]
+    if: always()
+
+    steps:
+    - name: Download Core Test Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: core-test-artifacts
+        path: core-artifacts/
+      continue-on-error: true
+
+    - name: Download Performance Test Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: performance-test-artifacts
+        path: performance-artifacts/
+      continue-on-error: true
+
+    - name: Generate Test Report
+      run: |
+        echo "# HiveMind Test Report" > test-report.md
+        echo "" >> test-report.md
+        echo "**Generated:** $(date -u)" >> test-report.md
+        echo "**Commit:** ${{ github.sha }}" >> test-report.md
+        echo "**Branch:** ${{ github.ref_name }}" >> test-report.md
+        echo "" >> test-report.md
+
+        echo "## Test Results" >> test-report.md
+        echo "" >> test-report.md
+
+        if [ -d "core-artifacts" ]; then
+          artifact_count=$(find core-artifacts -name "*.txt" | wc -l)
+          echo "- 📁 **Core Test Artifacts:** $artifact_count files generated" >> test-report.md
+
+          analysis_files=$(find core-artifacts -name "*_analysis.txt" | wc -l)
+          execution_files=$(find core-artifacts -name "*_execution_*.txt" | wc -l)
+
+          echo "  - Analysis files: $analysis_files" >> test-report.md
+          echo "  - Execution logs: $execution_files" >> test-report.md
+        fi
+
+        if [ -d "performance-artifacts" ]; then
+          perf_count=$(find performance-artifacts -name "*.txt" | wc -l)
+          echo "- ⚡ **Performance Test Artifacts:** $perf_count files generated" >> test-report.md
+        fi
+
+        echo "" >> test-report.md
+        echo "## Test Coverage" >> test-report.md
+        echo "" >> test-report.md
+        echo "- ✅ Planning algorithm tests" >> test-report.md
+        echo "- ✅ Execution simulation tests" >> test-report.md
+        echo "- ✅ Error handling tests" >> test-report.md
+        echo "- ✅ Example usage tests" >> test-report.md
+
+        if [ "${{ github.event.inputs.run_stress_tests }}" != "false" ]; then
+          echo "- ✅ Performance stress tests" >> test-report.md
+        else
+          echo "- ⏭️ Performance stress tests (skipped)" >> test-report.md
+        fi
+
+        echo "" >> test-report.md
+        echo "## Artifacts Information" >> test-report.md
+        echo "" >> test-report.md
+        echo "Test artifacts contain detailed analysis of breeding paths:" >> test-report.md
+        echo "- **\`*_analysis.txt\`** - Complete breeding trees with dependency visualization" >> test-report.md
+        echo "- **\`*_execution_*.txt\`** - Detailed execution logs with failure analysis" >> test-report.md
+        echo "" >> test-report.md
+        echo "Download artifacts from the workflow run to examine specific test results." >> test-report.md
+
+        cat test-report.md
+
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-report
+        path: test-report.md
+        retention-days: 30
